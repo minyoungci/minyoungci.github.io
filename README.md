@@ -1,1 +1,0 @@
-# minyoungci.github.io
