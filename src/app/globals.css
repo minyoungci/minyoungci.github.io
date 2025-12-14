@@ -1,42 +1,101 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Colors - The Batch Inspired */
+  --color-primary: #1a1a1a;
+  --color-secondary: #ff4b4b;
+  /* Updated to Red/Pink match */
+  --color-accent-purple: #e53935;
+  /* Darker red */
+  --color-accent-cyan: #ff8f8f;
+  --color-background: #ffffff;
+  --color-text-main: #111111;
+  --color-text-muted: #666666;
+  --color-border: #eaeaea;
+  --color-card-bg: #ffffff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Layout */
+  --max-width: 1200px;
+  --nav-height: 80px;
+  --border-radius: 12px;
+
+  /* Typography */
+  --font-sans: -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  Roboto,
+  "Helvetica Neue",
+  Arial,
+  sans-serif;
   }
-}
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background: #000000;
+      --color-text-main: #ffffff;
+      --color-text-muted: #888888;
+      --color-border: #333333;
+      --color-card-bg: #111111;
+      --color-primary: #ffffff;
+    }
   }
-}
+
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+    background: var(--color-background);
+    color: var(--color-text-main);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Utilities */
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(90deg, var(--color-secondary), var(--color-accent-purple));
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border-radius: 50px;
+    background: var(--color-primary);
+    color: var(--color-background);
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .btn:hover {
+    opacity: 0.8;
+  }
+
+  .card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
