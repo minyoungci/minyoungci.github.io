@@ -43,13 +43,16 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: var(--font-sans);
-  background: var(--color-background);
+  background: linear-gradient(to bottom, #ffffff, #fafafa);
+  /* Subtle depth */
   color: var(--color-text-main);
+  min-height: 100vh;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .container {
@@ -59,7 +62,21 @@ a {
 }
 
 /* Utilities */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
 .text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(90deg, var(--color-secondary), var(--color-accent-purple));
+}
+
+.text-gradient-hover:hover {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -75,11 +92,13 @@ a {
   background: var(--color-primary);
   color: var(--color-background);
   font-weight: 600;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
-  opacity: 0.8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .card {
@@ -87,10 +106,25 @@ a {
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border-color: rgba(255, 75, 75, 0.2);
+  /* Subtle red tint on hover */
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(to bottom, #000000, #111111);
+  }
+
+  .glass-nav {
+    background: rgba(0, 0, 0, 0.7);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
 }
