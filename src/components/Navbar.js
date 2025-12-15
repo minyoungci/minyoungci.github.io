@@ -9,8 +9,8 @@ export default function Navbar() {
                 </Link>
                 <div style={{ display: 'flex', gap: '20px' }}>
                     <Link href="/" style={{ color: 'var(--color-text-muted)' }}>Archive</Link>
-                    <Link href="/" style={{ color: 'var(--color-text-muted)' }}>Classic</Link>
-                    <Link href="/" style={{ color: 'var(--color-text-muted)' }}>Trend</Link>
+                    <Link href="/section/Classic" style={{ color: 'var(--color-text-muted)' }}>Classic</Link>
+                    <Link href="/section/Trend" style={{ color: 'var(--color-text-muted)' }}>Trend</Link>
                 </div>
             </div>
         </nav>
