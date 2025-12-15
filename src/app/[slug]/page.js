@@ -60,97 +60,84 @@ export default async function Post({ params }) {
 
             <style>{`
         .prose {
-            font-family: var(--font-sans);
-            color: #333d4b;
-            font-size: 17px;
-            line-height: 1.6;
-            letter-spacing: -0.2px;
+            font-family: var(--font-serif);
+            color: #2c2c2c;
+            font-size: 19px;
+            line-height: 1.8;
         }
         .prose h2 { 
-            font-size: 28px; 
+            font-family: var(--font-sans);
+            font-size: 30px; 
             font-weight: 700;
-            margin-top: 50px; 
-            margin-bottom: 16px;
-            color: #191f28;
-            letter-spacing: -0.5px;
+            margin-top: 56px; 
+            margin-bottom: 24px;
+            letterSpacing: '-0.5px';
+            color: #111;
         }
         .prose h3 { 
-            font-size: 22px; 
+            font-family: var(--font-sans);
+            font-size: 24px; 
             font-weight: 600;
-            margin-top: 32px; 
-            margin-bottom: 12px; 
-            color: #191f28;
+            margin-top: 40px; 
+            margin-bottom: 16px; 
+            color: #111;
         }
         .prose p { 
-            margin-bottom: 24px; 
+            margin-bottom: 28px; 
         }
         .prose a { 
             color: var(--color-secondary); 
-            text-decoration: none; 
-            border-bottom: 1px solid rgba(255, 75, 75, 0.3);
-            transition: border-color 0.2s;
-        }
-        .prose a:hover {
-            border-bottom-color: var(--color-secondary);
+            text-decoration: underline; 
+            text-underline-offset: 4px;
         }
         .prose ul, .prose ol { 
-            padding-left: 0; 
-            margin-bottom: 24px; 
+            padding-left: 20px; 
+            margin-bottom: 28px; 
         }
         .prose li { 
-            list-style: none;
-            margin-bottom: 12px; 
-            padding-left: 24px;
-            position: relative;
+            margin-bottom: 10px; 
+            padding-left: 8px;
         }
-        .prose li::before {
-            content: "•";
-            color: var(--color-secondary);
-            font-weight: bold;
-            position: absolute;
-            left: 6px;
-        }
-        /* Modern Callout */
+        /* Stylish Blockquote */
         .prose blockquote {
-            border-left: none;
-            background: #f9f9f9;
-            padding: 24px;
-            margin: 32px 0;
-            border-radius: 16px;
-            color: #4e5968;
-            font-style: normal;
-            font-weight: 500;
+            border-left: 4px solid var(--color-secondary);
+            padding-left: 24px;
+            margin: 40px 0;
+            font-style: italic;
+            color: #444;
+            background: #fafafa;
+            padding: 24px 24px 24px 32px;
+            border-radius: 0 12px 12px 0;
         }
         /* Image Styling */
         .prose img { 
             max-width: 100%; 
-            border-radius: 16px; 
-            margin: 32px 0; 
-            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px; 
+            margin: 40px 0; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
         }
         /* Code Block Styling */
         .prose pre { 
-            background: #f2f4f6; 
-            color: #333;
-            padding: 20px; 
+            background: #1e1e1e; 
+            color: #e0e0e0;
+            padding: 24px; 
             border-radius: 12px; 
             overflow-x: auto; 
             margin: 32px 0; 
             font-size: 14px;
-            font-family: 'Menlo', monospace;
+            border: 1px solid #333;
         }
         .prose code { 
-            font-family: 'Menlo', monospace; 
-            background: #f2f4f6; 
-            padding: 3px 6px; 
-            border-radius: 6px; 
-            font-size: 0.9em;
-            color: #e53935;
+            font-family: monospace; 
+            background: rgba(0,0,0,0.05); 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-size: 0.85em;
         }
         .prose pre code { 
             background: transparent; 
             padding: 0; 
-            color: inherit;
+            font-size: inherit;
         }
         
         @media (prefers-color-scheme: dark) {
@@ -160,8 +147,11 @@ export default async function Post({ params }) {
             background: #222; 
             color: #ccc; 
           }
-           .prose pre, .prose code { background: #222; color: #eee; }
-           .prose img { border-color: #333; }
+          .prose code { background: rgba(255,255,255,0.1); }
+          header div[style*="background: #fff0f0"] {
+            background: rgba(229, 57, 53, 0.2) !important;
+            color: #ff8a80 !important;
+          }
         }
       `}</style>
         </article>
