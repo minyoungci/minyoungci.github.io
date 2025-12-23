@@ -13,7 +13,7 @@ export default function Footer() {
                 </p>
                 <Subscribe />
                 <div style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '40px' }}>
-                    &copy; {new Date().getFullYear()} Minyoungci.
+                    &copy; 2025 Minyoungci. (v2.0)
                 </div>
             </div>
         </footer>

@@ -2,8 +2,8 @@ import Hero from '@/components/Hero';
 import Brief from '@/components/Brief';
 import { getSortedPostsData } from '@/lib/posts';
 
-export default function Home() {
-  const allPostsData = getSortedPostsData();
+export default async function Home() {
+  const allPostsData = await getSortedPostsData();
 
   return (
     <>

@@ -1,34 +1,44 @@
 :root {
-  /* Colors - The Batch Inspired */
-  --color-primary: #1a1a1a;
-  --color-secondary: #ff4b4b;
-  /* Updated to Red/Pink match */
-  --color-accent-purple: #e53935;
-  /* Darker red */
-  --color-accent-cyan: #ff8f8f;
+  /* Premium Color Palette */
+  --color-primary: #111111;
+  --color-secondary: #ff3b30;
+  /* Vibrant Red */
+  --color-accent-purple: #d10000;
+  /* Deep Red */
   --color-background: #ffffff;
-  --color-text-main: #111111;
+  --color-surface-translucent: rgba(255, 255, 255, 0.7);
+  --color-text-main: #1a1a1a;
   --color-text-muted: #666666;
-  --color-border: #eaeaea;
-  --color-card-bg: #ffffff;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-hover: rgba(255, 59, 48, 0.3);
 
-  /* Layout */
+  /* Shadows & Glows */
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.1);
+  --glow-primary: 0 0 20px rgba(255, 59, 48, 0.15);
+
+  /* Layout & Spacing */
   --max-width: 1200px;
   --nav-height: 80px;
-  --border-radius: 12px;
+  --border-radius: 16px;
 
   /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: #000000;
+    --color-background: #0a0a0a;
+    --color-surface-translucent: rgba(20, 20, 20, 0.7);
     --color-text-main: #ffffff;
-    --color-text-muted: #888888;
-    --color-border: #333333;
-    --color-card-bg: #111111;
+    --color-text-muted: #a1a1a1;
     --color-primary: #ffffff;
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-border-hover: rgba(255, 59, 48, 0.5);
+
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -43,88 +53,157 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: var(--font-sans);
-  background: linear-gradient(to bottom, #ffffff, #fafafa);
-  /* Subtle depth */
+  background: var(--color-background);
   color: var(--color-text-main);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 a {
   color: inherit;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 24px;
 }
 
 /* Utilities */
-.glass-nav {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
 .text-gradient {
-  background-clip: text;
+  background: linear-gradient(135deg, var(--color-secondary), #ff8a80);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(90deg, var(--color-secondary), var(--color-accent-purple));
+  background-clip: text;
 }
 
-.text-gradient-hover:hover {
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(90deg, var(--color-secondary), var(--color-accent-purple));
+.glass-panel {
+  background: var(--color-surface-translucent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 24px;
-  border-radius: 50px;
+  padding: 14px 32px;
+  border-radius: 100px;
   background: var(--color-primary);
   color: var(--color-background);
   font-weight: 600;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: none;
+  cursor: pointer;
 }
 
 .btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* Card Styles with Mock 3D Tilt */
 .card {
-  background: var(--color-card-bg);
+  background: var(--color-surface-translucent);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
 }
 
 .card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-  border-color: rgba(255, 75, 75, 0.2);
-  /* Subtle red tint on hover */
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: var(--shadow-lg), var(--glow-primary);
+  border-color: var(--color-border-hover);
 }
 
-/* Dark Mode Overrides */
-@media (prefers-color-scheme: dark) {
-  body {
-    background: linear-gradient(to bottom, #000000, #111111);
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
 
-  .glass-nav {
-    background: rgba(0, 0, 0, 0.7);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.motion-title {
+  opacity: 0;
+  animation: slideUpFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.motion-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.motion-delay-2 {
+  animation-delay: 0.3s;
+}
+
+.motion-delay-3 {
+  animation-delay: 0.5s;
+}
+
+/* Grid Layout */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 40px;
+}
+
+@media (max-width: 768px) {
+  .grid-layout {
+    grid-template-columns: 1fr;
   }
 }

@@ -15,6 +15,7 @@ export default function Navbar() {
                     Minyoungci
                 </Link>
                 <div style={{ display: 'flex', gap: '20px' }}>
+                    <Link href="/admin" style={{ color: 'var(--color-text-muted)', fontSize: '13px', opacity: 0.7 }}>Admin</Link>
                     <Link href="/" style={{ color: 'var(--color-text-muted)' }}>Archive</Link>
                     <Link href="/section/Classic" style={{ color: 'var(--color-text-muted)' }}>Classic</Link>
                     <Link href="/section/Trend" style={{ color: 'var(--color-text-muted)' }}>Trend</Link>
