@@ -1,23 +1,38 @@
+
 import Brief from '@/components/Brief';
 import { getSortedPostsData } from '@/lib/posts';
 
-export function generateStaticParams() {
-    // Define the categories we want to generate pages for
-    // We can also extract this dynamically from all posts if we want
-    const posts = getSortedPostsData();
-    const tags = new Set(posts.map(post => post.tag));
-    // Also explicitly add the menu items to ensure they exist even if empty
-    tags.add('Classic');
-    tags.add('Trend');
+export async function generateStaticParams() {
+    try {
+        // Define the categories we want to generate pages for
+        // We can also extract this dynamically from all posts if we want
+        const posts = await getSortedPostsData();
+        const tags = new Set(posts ? posts.map(post => post.tag) : []);
 
-    return Array.from(tags).map(tag => ({
-        category: tag,
-    }));
+        // Always ensure default categories exist
+        tags.add('Classic');
+        tags.add('Trend');
+        tags.add('Guide');
+        tags.add('News');
+
+        return Array.from(tags).map(tag => ({
+            category: tag,
+        })).filter(p => p.category);
+    } catch (error) {
+        console.error("Error generating section params:", error);
+        return [
+            { category: 'Classic' },
+            { category: 'Trend' },
+            { category: 'Guide' },
+            { category: 'News' }
+        ];
+    }
 }
 
 export default async function Section({ params }) {
     const { category } = await params;
-    const allPostsData = getSortedPostsData();
+    const allPostsData = await getSortedPostsData();
+    if (!allPostsData) return <div className="container" style={{ padding: '80px' }}>Error loading posts.</div>;
 
     // Filter posts by category (Case insensitive)
     const filteredPosts = allPostsData.filter(post =>

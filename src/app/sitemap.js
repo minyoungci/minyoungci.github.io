@@ -2,8 +2,8 @@ import { getSortedPostsData } from '@/lib/posts';
 
 export const dynamic = 'force-static';
 
-export default function sitemap() {
-    const posts = getSortedPostsData();
+export default async function sitemap() {
+    const posts = await getSortedPostsData();
     const baseUrl = 'https://minyoungci.github.io'; // Update this with your actual domain if it changes
 
     const postsUrls = posts.map((post) => ({
