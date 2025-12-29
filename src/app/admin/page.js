@@ -5,6 +5,8 @@ export const dynamic = 'force-static';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { remark } from 'remark';
+import html from 'remark-html';
 
 export default function AdminPage() {
     const router = useRouter();
@@ -300,13 +302,12 @@ Wrap up with final thoughts and a call to action.
                 return;
             }
             try {
-                const response = await fetch('/api/preview', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: formData.content })
-                });
-                const data = await response.json();
-                setPreviewHtml(data.html);
+                // Client-side markdown processing for GitHub Pages compatibility
+                const processedContent = await remark()
+                    .use(html)
+                    .process(formData.content);
+                const contentHtml = processedContent.toString();
+                setPreviewHtml(contentHtml);
             } catch (error) {
                 console.error('Preview error', error);
             }
