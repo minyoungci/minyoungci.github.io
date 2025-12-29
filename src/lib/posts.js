@@ -91,48 +91,56 @@ export async function getAllPostIds() {
 export async function getPostData(id) {
     // Try Supabase first
     if (supabase) {
-        const { data, error } = await supabase
-            .from('posts')
-            .select('*')
-            .eq('id', id)
-            .single();
+        try {
+            const { data, error } = await supabase
+                .from('posts')
+                .select('*')
+                .eq('id', id)
+                .single();
 
-        if (data && !error) {
-            // Convert markdown content to HTML if needed
-            // Assuming data.content stores Markdown
-            const processedContent = await remark()
-                .use(html)
-                .process(data.content || '');
-            const contentHtml = processedContent.toString();
+            if (data && !error) {
+                const processedContent = await remark()
+                    .use(html)
+                    .process(data.content || '');
+                const contentHtml = processedContent.toString();
 
-            return {
-                id,
-                contentHtml,
-                title: data.title,
-                date: data.date,
-                tag: data.tag,
-                summary: data.summary,
-                image: data.image
-            };
+                return {
+                    id,
+                    content: data.content,
+                    contentHtml,
+                    title: data.title,
+                    date: data.date,
+                    tag: data.tag,
+                    summary: data.summary,
+                    image: data.image
+                };
+            }
+        } catch (e) {
+            console.error("Supabase getPostData error:", e);
         }
     }
 
     // Fallback to Local
-    const fullPath = path.join(postsDirectory, `${id}.md`);
-    if (fs.existsSync(fullPath)) {
-        const fileContents = fs.readFileSync(fullPath, 'utf8');
-        const matterResult = matter(fileContents);
-        const processedContent = await remark()
-            .use(html)
-            .process(matterResult.content);
-        const contentHtml = processedContent.toString();
+    try {
+        const fullPath = path.join(postsDirectory, `${id}.md`);
+        if (fs.existsSync(fullPath)) {
+            const fileContents = fs.readFileSync(fullPath, 'utf8');
+            const matterResult = matter(fileContents);
+            const processedContent = await remark()
+                .use(html)
+                .process(matterResult.content);
+            const contentHtml = processedContent.toString();
 
-        return {
-            id,
-            contentHtml,
-            ...matterResult.data,
-        };
+            return {
+                id,
+                content: matterResult.content,
+                contentHtml,
+                ...matterResult.data,
+            };
+        }
+    } catch (e) {
+        console.error("Local getPostData error:", e);
     }
 
-    throw new Error(`Post not found: ${id}`);
+    return null;
 }

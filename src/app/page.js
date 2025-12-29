@@ -27,9 +27,6 @@ export default function Home() {
     fetchPosts();
   }, []);
 
-  const featuredPosts = allPostsData.slice(0, 2);
-  const regularPosts = allPostsData.slice(2);
-
   return (
     <>
       <main className="container posts-section">
@@ -37,56 +34,28 @@ export default function Home() {
           <div className="loading-state">
             Loading articles...
           </div>
+        ) : allPostsData.length > 0 ? (
+          <section className="animate-fade-in">
+            <h2 className="section-title">Latest Articles</h2>
+            <div className="posts-grid">
+              {allPostsData.map((post) => (
+                <Brief
+                  key={post.id}
+                  title={post.title}
+                  tag={post.tag}
+                  summary={post.summary}
+                  image={post.image}
+                  slug={post.id}
+                  date={post.date}
+                />
+              ))}
+            </div>
+          </section>
         ) : (
-          <>
-            {/* Featured Posts */}
-            {featuredPosts.length > 0 && (
-              <section className="animate-fade-in">
-                <h2 className="section-title">Featured Articles</h2>
-                <div className="posts-grid" style={{ marginBottom: '60px' }}>
-                  {featuredPosts.map((post) => (
-                    <Brief
-                      key={post.id}
-                      title={post.title}
-                      tag={post.tag}
-                      summary={post.summary}
-                      image={post.image}
-                      slug={post.id}
-                      date={post.date}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Latest Posts */}
-            {regularPosts.length > 0 && (
-              <section className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <h2 className="section-title">Latest Articles</h2>
-                <div className="posts-grid">
-                  {regularPosts.map((post) => (
-                    <Brief
-                      key={post.id}
-                      title={post.title}
-                      tag={post.tag}
-                      summary={post.summary}
-                      image={post.image}
-                      slug={post.id}
-                      date={post.date}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Empty State */}
-            {allPostsData.length === 0 && !loading && (
-              <div className="empty-state">
-                <div className="empty-state-icon">📝</div>
-                <p className="empty-state-text">No articles published yet. Check back soon!</p>
-              </div>
-            )}
-          </>
+          <div className="empty-state">
+            <div className="empty-state-icon">📝</div>
+            <p className="empty-state-text">No articles published yet.</p>
+          </div>
         )}
       </main>
 
