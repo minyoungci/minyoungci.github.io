@@ -33,44 +33,35 @@ export default function SectionClient({ category }) {
     if (!category) return <div className="container" style={{ padding: '80px' }}>Loading...</div>;
 
     return (
-        <>
-            <section className="container" style={{ padding: '80px 20px 40px', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '20px', textTransform: 'capitalize' }}>
+        <main className="container posts-section">
+            <header style={{ marginBottom: '60px', textAlign: 'center' }} className="animate-fade-in">
+                <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '15px', color: 'var(--color-primary)' }}>
                     {decodeURIComponent(category)}
                 </h1>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '18px' }}>
-                    Curated articles for {decodeURIComponent(category)}
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.25rem' }}>
+                    Curated intelligence artifacts for {decodeURIComponent(category)}
                 </p>
-            </section>
+            </header>
 
-            <section className="container" style={{ padding: '40px 20px 80px' }}>
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--color-text-muted)' }}>
-                        Loading articles...
-                    </div>
-                ) : filteredPosts.length > 0 ? (
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-                        gap: '40px'
-                    }}>
-                        {filteredPosts.map(({ id, date, title, tag, summary, image }) => (
-                            <Brief
-                                key={id}
-                                slug={id}
-                                title={title}
-                                tag={tag}
-                                summary={summary}
-                                image={image}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--color-text-muted)' }}>
-                        No articles found in this section.
-                    </div>
-                )}
-            </section>
-        </>
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '100px', color: 'var(--color-text-muted)' }}>
+                    Scanning {category} frequency...
+                </div>
+            ) : filteredPosts.length > 0 ? (
+                <div className="posts-grid animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                    {filteredPosts.map((post) => (
+                        <Brief
+                            key={post.id}
+                            slug={post.id}
+                            {...post}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <div style={{ textAlign: 'center', padding: '100px', color: 'var(--color-text-muted)' }} className="animate-fade-in">
+                    No articles found in this section yet.
+                </div>
+            )}
+        </main>
     );
 }

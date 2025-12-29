@@ -27,31 +27,50 @@ export default function Home() {
     fetchPosts();
   }, []);
 
+  const featuredPosts = allPostsData.slice(0, 2);
+  const regularPosts = allPostsData.slice(2);
+
   return (
     <>
       <Hero />
-      <section className="container" style={{ padding: '40px 20px 80px' }}>
+
+      <main className="container posts-section">
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '100px' }}>Loading updates...</div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-            gap: '40px'
-          }}>
-            {allPostsData.map(({ id, date, title, tag, summary, image }) => (
-              <Brief
-                key={id}
-                slug={id}
-                title={title}
-                tag={tag}
-                summary={summary}
-                image={image}
-              />
-            ))}
+          <div style={{ textAlign: 'center', padding: '100px', color: 'var(--color-text-muted)' }}>
+            Analyzing intelligence...
           </div>
+        ) : (
+          <>
+            {featuredPosts.length > 0 && (
+              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <h2 className="section-title">Featured Intelligence</h2>
+                <div className="posts-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', marginBottom: '60px' }}>
+                  {featuredPosts.map((post) => (
+                    <Brief key={post.id} {...post} slug={post.id} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {regularPosts.length > 0 && (
+              <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                <h2 className="section-title">Latest Updates</h2>
+                <div className="posts-grid">
+                  {regularPosts.map((post) => (
+                    <Brief key={post.id} {...post} slug={post.id} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {allPostsData.length === 0 && !loading && (
+              <div style={{ textAlign: 'center', padding: '100px', color: 'var(--color-text-muted)' }}>
+                No posts found yet. Check back later.
+              </div>
+            )}
+          </>
         )}
-      </section>
+      </main>
     </>
   );
 }

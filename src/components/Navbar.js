@@ -2,25 +2,20 @@ import Link from 'next/link';
 
 export default function Navbar() {
     return (
-        <nav className="glass-nav" style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 100,
-            height: 'var(--nav-height)',
-            display: 'flex',
-            alignItems: 'center'
-        }}>
-            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Link href="/" style={{ fontSize: '24px', fontWeight: 'bold' }}>
+        <header className="header">
+            <div className="header-inner container">
+                <Link href="/" className="logo">
                     Minyoungci
                 </Link>
-                <div style={{ display: 'flex', gap: '20px' }}>
-                    <Link href="/admin" style={{ color: 'var(--color-text-muted)', fontSize: '13px', opacity: 0.7 }}>Admin</Link>
-                    <Link href="/" style={{ color: 'var(--color-text-muted)' }}>Archive</Link>
-                    <Link href="/section/Classic" style={{ color: 'var(--color-text-muted)' }}>Classic</Link>
-                    <Link href="/section/Trend" style={{ color: 'var(--color-text-muted)' }}>Trend</Link>
-                </div>
+
+                <nav className="nav">
+                    <Link href="/admin" className="nav-link">Admin</Link>
+                    <Link href="/section/Classic" className="nav-link">Classic</Link>
+                    <Link href="/section/Trend" className="nav-link">Trend</Link>
+                    <Link href="/section/Guide" className="nav-link">Guide</Link>
+                    <button className="btn-subscribe">Subscribe</button>
+                </nav>
             </div>
-        </nav>
+        </header>
     );
 }

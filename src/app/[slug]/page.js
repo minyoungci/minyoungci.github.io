@@ -39,23 +39,13 @@ export default async function Post({ params }) {
   const { slug } = await params;
   const postData = await getPostData(slug);
 
-  return (
-    <article className="post-container">
-      {/* Hero Section */}
-      <header className="post-header">
-        <div className="post-meta">
-          <span className="post-tag">{postData.tag || 'Trend'}</span>
-          <time className="post-date">{postData.date}</time>
-        </div>
-        <h1 className="post-title">{postData.title}</h1>
-        {postData.image && (
-          <div className="post-cover-image">
-            <img src={postData.image} alt={postData.title} />
-          </div>
-        )}
-      </header>
+  if (!postData) {
+    return <div className="container" style={{ padding: '100px', textAlign: 'center' }}>Post not found</div>;
+  }
 
-      {/* Structured Data for SEO */}
+  return (
+    <article className="article animate-fade-in">
+      {/* SEO Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -66,171 +56,37 @@ export default async function Post({ params }) {
             "description": postData.summary,
             "image": postData.image,
             "datePublished": postData.date,
-            "author": {
-              "@type": "Organization",
-              "name": "AI Intelligence"
-            }
+            "author": { "@type": "Organization", "name": "AI Intelligence" }
           })
         }}
       />
 
-      {/* Content Section */}
+      <header className="article-header">
+        <span className="article-tag">{postData.tag || 'Intelligence'}</span>
+        <h1 className="article-title">{postData.title}</h1>
+        <div className="card-meta" style={{ justifyContent: 'center' }}>
+          <span>{postData.date}</span>
+          <span>●</span>
+          <span>AI Editorial Team</span>
+        </div>
+      </header>
+
+      {postData.image && (
+        <div style={{ margin: '0 0 60px', borderRadius: 'var(--radius-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}>
+          <img src={postData.image} alt={postData.title} style={{ width: '100%', display: 'block' }} />
+        </div>
+      )}
+
       <div
-        className="post-content"
+        className="article-content"
         dangerouslySetInnerHTML={{ __html: postData.contentHtml }}
       />
 
-      {/* Navigation / Footer */}
-      <div className="post-footer">
-        <Link href="/" className="back-link">
-          ← Back to Intelligence
+      <div style={{ marginTop: '80px', paddingTop: '40px', borderTop: '1px solid var(--color-border)' }}>
+        <Link href="/" style={{ color: 'var(--color-primary)', fontWeight: '700', fontSize: '14px' }}>
+          ← Back to Intelligence Hub
         </Link>
       </div>
-
-      {/* Styles localized for this page/template */}
-      <style>{`
-        .post-container {
-          max-width: 720px;
-          margin: 0 auto;
-          padding: 60px 20px 120px;
-          color: #ffffff; /* Force white text */
-        }
-
-        .post-header {
-          text-align: center;
-          margin-bottom: 60px;
-        }
-
-        .post-meta {
-          display: flex;
-          justify-content: center;
-          gap: 12px;
-          align-items: center;
-          margin-bottom: 20px;
-          font-family: var(--font-inter);
-          font-size: 14px;
-          color: var(--color-text-muted);
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-        
-        .post-tag {
-          color: var(--color-secondary);
-          font-weight: 700;
-        }
-
-        .post-title {
-          font-family: var(--font-outfit);
-          font-size: 3.5rem;
-          line-height: 1.1;
-          font-weight: 800;
-          margin-bottom: 30px;
-          letter-spacing: -0.02em;
-          letter-spacing: -0.02em;
-          color: var(--color-text-main);
-        }
-
-        .post-cover-image {
-          margin-top: 40px;
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-          border: 1px solid rgba(255,255,255,0.1);
-        }
-        .post-cover-image img {
-          width: 100%;
-          display: block;
-        }
-
-        /* --- Content Typography (The "Trendy" Part) --- */
-        .post-content {
-          font-family: var(--font-inter);
-          font-size: 1.125rem; /* 18px */
-          line-height: 1.8;
-          font-family: var(--font-inter);
-          font-size: 1.125rem; /* 18px */
-          line-height: 1.8;
-          color: var(--color-text-main); /* Use global text color (white in dark mode) */
-          font-weight: 450;
-        }
-        
-        .post-content p {
-          margin-bottom: 1.5em;
-        }
-
-        .post-content h2 {
-          font-family: var(--font-outfit);
-          font-size: 2rem;
-          margin-top: 2.5em;
-          margin-bottom: 0.8em;
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-          padding-bottom: 0.3em;
-        }
-
-        .post-content h3 {
-          font-family: var(--font-outfit);
-          font-size: 1.5rem;
-          margin-top: 2em;
-          margin-bottom: 0.5em;
-        }
-
-        .post-content ul, .post-content ol {
-          margin-bottom: 1.5em;
-          padding-left: 1.5em;
-        }
-        
-        .post-content li {
-          margin-bottom: 0.5em;
-        }
-
-        .post-content blockquote {
-          font-family: var(--font-outfit);
-          font-size: 1.4rem;
-          font-style: italic;
-          border-left: 4px solid var(--color-secondary);
-          padding-left: 20px;
-          margin: 2em 0;
-          color: var(--color-text-muted);
-        }
-
-        .post-content img {
-          max-width: 100%;
-          border-radius: 8px;
-          margin: 2em 0;
-        }
-        
-        .post-content a {
-          color: var(--color-secondary);
-          text-decoration: none;
-          border-bottom: 1px solid transparent;
-          transition: border-color 0.2s;
-        }
-        .post-content a:hover {
-          border-bottom-color: var(--color-secondary);
-        }
-
-        .post-footer {
-          margin-top: 80px;
-          padding-top: 40px;
-          border-top: 1px solid var(--color-border);
-        }
-        
-        .back-link {
-          color: var(--color-text-muted);
-          text-decoration: none;
-          font-size: 14px;
-          transition: color 0.2s;
-        }
-        .back-link:hover {
-          color: #fff;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-          .post-title { font-size: 2.5rem; }
-          .post-content { font-size: 1rem; }
-        }
-      `}</style>
     </article>
   );
 }

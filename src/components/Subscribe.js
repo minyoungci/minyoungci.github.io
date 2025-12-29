@@ -49,22 +49,30 @@ export default function Subscribe() {
             <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                 <input
                     type="email"
-                    placeholder="Email Address"
+                    placeholder="Enter your email for intelligence updates..."
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={status === 'loading' || status === 'success'}
                     style={{
-                        padding: '12px 20px',
-                        borderRadius: '50px',
+                        padding: '14px 24px',
+                        borderRadius: 'var(--radius-full)',
                         border: '1px solid var(--color-border)',
+                        background: 'var(--color-bg)',
+                        color: 'var(--color-text)',
                         flex: 1,
-                        fontSize: '16px'
+                        fontSize: '15px',
+                        outline: 'none',
+                        transition: 'border-color 0.2s'
                     }}
+                    className="subscribe-input"
                 />
                 <button
-                    className="btn"
+                    className="btn-subscribe"
                     disabled={status === 'loading'}
-                    style={{ cursor: status === 'loading' ? 'not-allowed' : 'pointer' }}
+                    style={{
+                        cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+                        padding: '14px 28px'
+                    }}
                 >
                     {status === 'loading' ? '...' : 'Subscribe'}
                 </button>
