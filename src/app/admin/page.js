@@ -303,17 +303,30 @@ Summarize key takeaways and suggest next steps or further reading.
     // Publishing
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validation
+        if (!formData.slug || !formData.slug.trim()) {
+            setStatus('error');
+            setMessage('Slug is required');
+            return;
+        }
+        if (!formData.title || !formData.title.trim()) {
+            setStatus('error');
+            setMessage('Title is required');
+            return;
+        }
+
         setStatus('loading');
 
         try {
             const { error } = await supabase
                 .from('posts')
                 .insert([{
-                    id: formData.slug,
-                    title: formData.title,
+                    id: formData.slug.trim(),
+                    title: formData.title.trim(),
                     tag: formData.tag,
-                    summary: formData.summary,
-                    content: formData.content,
+                    summary: formData.summary?.trim() || '',
+                    content: formData.content || '',
                     image: formData.image || null,
                     date: new Date().toISOString()
                 }]);
