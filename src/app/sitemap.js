@@ -13,6 +13,14 @@ export default async function sitemap() {
         priority: 0.7,
     }));
 
+    const categories = ['Classic', 'Trend', 'Guide', 'News'];
+    const sectionUrls = categories.map(cat => ({
+        url: `${baseUrl}/section/${cat}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.8,
+    }));
+
     return [
         {
             url: baseUrl,
@@ -20,6 +28,7 @@ export default async function sitemap() {
             changeFrequency: 'daily',
             priority: 1,
         },
+        ...sectionUrls,
         ...postsUrls,
     ];
 }

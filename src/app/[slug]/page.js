@@ -9,6 +9,32 @@ export async function generateStaticParams() {
   })).filter(p => p.slug);
 }
 
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const postData = await getPostData(slug);
+
+  if (!postData) return { title: 'Post Not Found' };
+
+  return {
+    title: postData.title,
+    description: postData.summary || `Read about ${postData.title} on AI Intelligence.`,
+    openGraph: {
+      title: postData.title,
+      description: postData.summary,
+      type: 'article',
+      publishedTime: postData.date,
+      authors: ['AI Intelligence'],
+      images: postData.image ? [{ url: postData.image }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: postData.title,
+      description: postData.summary,
+      images: postData.image ? [postData.image] : [],
+    },
+  };
+}
+
 export default async function Post({ params }) {
   const { slug } = await params;
   const postData = await getPostData(slug);
@@ -28,6 +54,25 @@ export default async function Post({ params }) {
           </div>
         )}
       </header>
+
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": postData.title,
+            "description": postData.summary,
+            "image": postData.image,
+            "datePublished": postData.date,
+            "author": {
+              "@type": "Organization",
+              "name": "AI Intelligence"
+            }
+          })
+        }}
+      />
 
       {/* Content Section */}
       <div

@@ -8,16 +8,38 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 export const metadata = {
   metadataBase: new URL('https://minyoungci.github.io'),
-  title: "The Batch Clone | AI News",
-  description: "Weekly AI news and insights.",
+  title: {
+    default: "AI Intelligence Blog | Deep Insights for Leaders",
+    template: "%s | AI Intelligence"
+  },
+  description: "Weekly AI news, deep analysis, and intelligence for engineers and leaders. Stay ahead of the curve.",
+  keywords: ["AI", "Artificial Intelligence", "Machine Learning", "Tech Blog", "Engineering"],
+  authors: [{ name: "AI Editorial Team" }],
   openGraph: {
-    title: 'The Batch Clone | AI News',
-    description: 'Weekly AI news and insights.',
+    title: 'AI Intelligence Blog',
+    description: 'Weekly AI news, deep analysis, and intelligence for engineers and leaders.',
     url: 'https://minyoungci.github.io',
-    siteName: 'AI Blog',
+    siteName: 'AI Intelligence',
+    images: [
+      {
+        url: '/favicon.ico', // Fallback image
+        width: 1200,
+        height: 630,
+      },
+    ],
     locale: 'ko_KR',
     type: 'website',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Intelligence Blog',
+    description: 'Weekly AI news and deep insights.',
+    images: ['/favicon.ico'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  }
 };
 
 export default function RootLayout({ children }) {
