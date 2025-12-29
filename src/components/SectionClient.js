@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Brief from '@/components/Brief';
+import FloatingSubscribe from '@/components/FloatingSubscribe';
 import { supabase } from '@/lib/supabase';
+
+const categoryDescriptions = {
+    'Classic': 'Timeless articles and foundational concepts in AI and machine learning.',
+    'Trend': 'The latest developments and emerging trends in artificial intelligence.',
+    'Guide': 'Practical tutorials and how-to guides for AI practitioners.',
+    'News': 'Breaking news and updates from the AI industry.'
+};
 
 export default function SectionClient({ category }) {
     const [filteredPosts, setFilteredPosts] = useState([]);
@@ -30,38 +38,60 @@ export default function SectionClient({ category }) {
         fetchPosts();
     }, [category]);
 
-    if (!category) return <div className="container" style={{ padding: '80px' }}>Loading...</div>;
+    if (!category) return <div className="loading-state">Loading...</div>;
+
+    const decodedCategory = decodeURIComponent(category);
 
     return (
-        <main className="container posts-section">
-            <header style={{ marginBottom: '60px', textAlign: 'center' }} className="animate-fade-in">
-                <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '15px', color: 'var(--color-primary)' }}>
-                    {decodeURIComponent(category)}
-                </h1>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.25rem' }}>
-                    Curated intelligence artifacts for {decodeURIComponent(category)}
-                </p>
-            </header>
+        <>
+            <main className="container posts-section">
+                <header className="animate-fade-in" style={{ marginBottom: '48px' }}>
+                    <h1 style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '2.5rem',
+                        fontWeight: '800',
+                        marginBottom: '12px',
+                        color: 'var(--color-text-main)'
+                    }}>
+                        {decodedCategory}
+                    </h1>
+                    <p style={{
+                        fontFamily: 'var(--font-serif)',
+                        fontSize: '18px',
+                        color: 'var(--color-text-muted)',
+                        maxWidth: '600px'
+                    }}>
+                        {categoryDescriptions[decodedCategory] || `Articles tagged with ${decodedCategory}`}
+                    </p>
+                </header>
 
-            {loading ? (
-                <div style={{ textAlign: 'center', padding: '100px', color: 'var(--color-text-muted)' }}>
-                    Scanning {category} frequency...
-                </div>
-            ) : filteredPosts.length > 0 ? (
-                <div className="posts-grid animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                    {filteredPosts.map((post) => (
-                        <Brief
-                            key={post.id}
-                            slug={post.id}
-                            {...post}
-                        />
-                    ))}
-                </div>
-            ) : (
-                <div style={{ textAlign: 'center', padding: '100px', color: 'var(--color-text-muted)' }} className="animate-fade-in">
-                    No articles found in this section yet.
-                </div>
-            )}
-        </main>
+                {loading ? (
+                    <div className="loading-state">
+                        Loading articles...
+                    </div>
+                ) : filteredPosts.length > 0 ? (
+                    <div className="posts-grid animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                        {filteredPosts.map((post) => (
+                            <Brief
+                                key={post.id}
+                                title={post.title}
+                                tag={post.tag}
+                                summary={post.summary}
+                                image={post.image}
+                                slug={post.id}
+                                date={post.date}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="empty-state animate-fade-in">
+                        <div className="empty-state-icon">📂</div>
+                        <p className="empty-state-text">No articles in this category yet.</p>
+                    </div>
+                )}
+            </main>
+
+            <FloatingSubscribe />
+        </>
     );
 }

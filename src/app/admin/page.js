@@ -4,13 +4,10 @@ export const dynamic = 'force-static';
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
 import { remark } from 'remark';
 import html from 'remark-html';
 
 export default function AdminPage() {
-    const router = useRouter();
-
     // Hydration Fix: Ensure component only renders on client
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
@@ -28,11 +25,11 @@ export default function AdminPage() {
     const fileInputRef = useRef(null);
 
     // Post Manager State
-    const [activeTab, setActiveTab] = useState('media'); // 'media' or 'posts'
+    const [activeTab, setActiveTab] = useState('media');
     const [postsList, setPostsList] = useState([]);
 
     // Two-step Delete State
-    const [deleteConfirm, setDeleteConfirm] = useState(null); // stores ID or Name of item to delete
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
 
     const fetchPostsList = async () => {
         try {
@@ -48,31 +45,24 @@ export default function AdminPage() {
     };
 
     const handleDeletePost = async (id) => {
-        // Step 1: Request Confirmation
         if (deleteConfirm !== id) {
             setDeleteConfirm(id);
-            setTimeout(() => setDeleteConfirm(null), 3000); // Reset after 3s
+            setTimeout(() => setDeleteConfirm(null), 3000);
             return;
         }
 
-        // Step 2: Actual Delete
         try {
-            console.log("Deleting post:", id);
             const { error } = await supabase.from('posts').delete().eq('id', id);
-
             if (error) throw error;
-
             setDeleteConfirm(null);
             fetchPostsList();
-            alert('Post Deleted Successfully');
+            alert('Post deleted successfully');
         } catch (error) {
             console.error('Error deleting post:', error);
             alert('Failed: ' + error.message);
         }
     };
 
-
-    // Auto load posts if tab is "posts"
     useEffect(() => {
         if (activeTab === 'posts') {
             fetchPostsList();
@@ -86,24 +76,24 @@ export default function AdminPage() {
         tag: 'Trend',
         summary: '',
         content: '',
-        image: '' // Cover image
+        image: ''
     });
 
-    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
 
-    // --- Authentication ---
+    // Authentication
     const handleLogin = (e) => {
         e.preventDefault();
         if (password === '1234') {
             setIsAuthenticated(true);
-            fetchImages(); // Load images on login
+            fetchImages();
         } else {
             alert('Incorrect password');
         }
     };
 
-    // --- Image Management ---
+    // Image Management
     const fetchImages = async () => {
         try {
             const { data, error } = await supabase.storage
@@ -140,10 +130,9 @@ export default function AdminPage() {
 
             if (uploadError) throw uploadError;
 
-            await fetchImages(); // Refresh list
+            await fetchImages();
             setMessage('Image uploaded!');
 
-            // Auto-set cover if empty
             const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
             if (!formData.image) {
                 setFormData(prev => ({ ...prev, image: publicUrl }));
@@ -159,14 +148,12 @@ export default function AdminPage() {
     };
 
     const handleDeleteImage = async (imageName) => {
-        // Step 1: Request Confirmation
         if (deleteConfirm !== imageName) {
             setDeleteConfirm(imageName);
             setTimeout(() => setDeleteConfirm(null), 3000);
             return;
         }
 
-        // Step 2: Actual Delete
         try {
             const { error } = await supabase.storage
                 .from('images')
@@ -187,7 +174,6 @@ export default function AdminPage() {
         if (!confirm('WARNING: This will delete ALL posts. This cannot be undone. Are you sure?')) return;
 
         try {
-            // Fetch all IDs first
             const { data: posts, error: fetchError } = await supabase.from('posts').select('id');
             if (fetchError) throw fetchError;
 
@@ -208,7 +194,7 @@ export default function AdminPage() {
         }
     };
 
-    // --- Toolbar & Editor Logic ---
+    // Toolbar & Editor Logic
     const insertMarkdown = (prefix, suffix) => {
         const textarea = document.getElementById('content-editor');
         if (!textarea) return;
@@ -221,10 +207,8 @@ export default function AdminPage() {
         const after = text.substring(end);
 
         const newContent = before + prefix + selection + suffix + after;
-
         setFormData(prev => ({ ...prev, content: newContent }));
 
-        // Restore cursor/selection approx
         setTimeout(() => {
             textarea.focus();
             textarea.setSelectionRange(start + prefix.length, end + prefix.length);
@@ -234,39 +218,41 @@ export default function AdminPage() {
     const insertTemplate = () => {
         if (formData.content && !confirm('Overwrite current content with template?')) return;
 
-        const template = `# Post Title Here
+        const template = `# Article Title
 
-> A clear, one-line summary or hook for the post.
+> A compelling hook or summary that captures the essence of this article.
 
 ## Introduction
-Start with a compelling intro. Why does this matter? What will the reader learn?
 
-## Key Points
-1. **Point One**: Explain the detail.
-2. **Point Two**: Explain the detail.
-3. **Point Three**: Explain the detail.
+Start with context. Why does this topic matter? What will readers learn?
 
-## Code Example
-\`\`\`javascript
-console.log("Hello AI");
-\`\`\`
+## Key Insights
+
+### First Point
+
+Explain the first major insight with supporting details.
+
+### Second Point
+
+Develop the second insight with examples or data.
+
+### Third Point
+
+Present the third insight and its implications.
+
+## Analysis
+
+Provide deeper analysis, connecting the insights together.
 
 ## Conclusion
-Wrap up with final thoughts and a call to action.
+
+Summarize key takeaways and suggest next steps or further reading.
+
+---
+
+*What are your thoughts on this topic? Share in the comments below.*
 `;
         setFormData(prev => ({ ...prev, content: template }));
-    };
-
-    const toolbarBtnStyle = {
-        background: '#222',
-        border: '1px solid #333',
-        color: '#ccc',
-        borderRadius: '4px',
-        padding: '4px 8px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        fontWeight: 'bold',
-        minWidth: '24px'
     };
 
     const insertImageToContent = (url) => {
@@ -281,7 +267,7 @@ Wrap up with final thoughts and a call to action.
         setFormData(prev => ({ ...prev, image: url }));
     };
 
-    // --- Editor Logic ---
+    // Editor Logic
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -302,7 +288,6 @@ Wrap up with final thoughts and a call to action.
                 return;
             }
             try {
-                // Client-side markdown processing for GitHub Pages compatibility
                 const processedContent = await remark()
                     .use(html)
                     .process(formData.content);
@@ -315,7 +300,7 @@ Wrap up with final thoughts and a call to action.
         return () => clearTimeout(timer);
     }, [formData.content]);
 
-    // --- Publishing ---
+    // Publishing
     const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus('loading');
@@ -336,7 +321,7 @@ Wrap up with final thoughts and a call to action.
             if (error) throw error;
 
             setStatus('success');
-            setMessage('🎉 Published Successfully!');
+            setMessage('Published Successfully!');
 
             setFormData({
                 title: '',
@@ -359,56 +344,135 @@ Wrap up with final thoughts and a call to action.
 
     if (!isAuthenticated) {
         return (
-            <div className="flex-center" style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#000', color: '#fff' }}>
-                <form onSubmit={handleLogin} style={{ textAlign: 'center', padding: '40px', background: '#111', borderRadius: '16px', border: '1px solid #333' }}>
-                    <h1 style={{ marginBottom: '20px' }}>Admin Access</h1>
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: 'var(--color-background)',
+                padding: '24px'
+            }}>
+                <form onSubmit={handleLogin} style={{
+                    textAlign: 'center',
+                    padding: '48px',
+                    background: 'var(--color-surface)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--color-border)',
+                    maxWidth: '400px',
+                    width: '100%'
+                }}>
+                    <h1 style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        marginBottom: '8px',
+                        color: 'var(--color-text-main)'
+                    }}>
+                        Write a Post
+                    </h1>
+                    <p style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '14px',
+                        color: 'var(--color-text-muted)',
+                        marginBottom: '32px'
+                    }}>
+                        Enter your access code to continue
+                    </p>
                     <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="PIN Code"
-                        style={{ padding: '12px', borderRadius: '8px', border: '1px solid #444', marginBottom: '20px', background: '#000', color: '#fff', width: '200px', display: 'block', margin: '0 auto 20px' }}
+                        placeholder="Access Code"
+                        style={{
+                            width: '100%',
+                            padding: '14px 18px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--color-border)',
+                            marginBottom: '16px',
+                            background: 'var(--color-background)',
+                            color: 'var(--color-text-main)',
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '16px'
+                        }}
                     />
-                    <button className="btn-primary" style={{ width: '100%' }}>Unlock</button>
+                    <button type="submit" style={{
+                        width: '100%',
+                        padding: '14px',
+                        background: 'var(--color-primary)',
+                        color: 'var(--color-background)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                    }}>
+                        Access Editor
+                    </button>
                 </form>
             </div>
         );
     }
 
     return (
-        <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#000', color: '#fff' }}>
+        <div style={{ display: 'flex', height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
 
-            {/* --- LEFT SIDEBAR: Navigation & Image Manager --- */}
+            {/* LEFT SIDEBAR */}
             <div style={{
                 width: isSidebarOpen ? '320px' : '0',
-                background: '#111',
-                borderRight: '1px solid #333',
+                background: 'var(--color-surface)',
+                borderRight: '1px solid var(--color-border)',
                 transition: 'width 0.3s ease',
                 display: 'flex',
                 flexDirection: 'column',
-                flexShrink: 0
+                flexShrink: 0,
+                overflow: 'hidden'
             }}>
                 {/* Tabs */}
-                <div style={{ display: 'flex', borderBottom: '1px solid #333' }}>
+                <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)' }}>
                     <button
                         onClick={() => setActiveTab('media')}
-                        style={{ flex: 1, padding: '15px', background: activeTab === 'media' ? '#111' : '#000', color: activeTab === 'media' ? '#fff' : '#888', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                        style={{
+                            flex: 1,
+                            padding: '16px',
+                            background: activeTab === 'media' ? 'var(--color-background)' : 'transparent',
+                            color: activeTab === 'media' ? 'var(--color-text-main)' : 'var(--color-text-muted)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                        }}
                     >
                         Media
                     </button>
                     <button
                         onClick={() => setActiveTab('posts')}
-                        style={{ flex: 1, padding: '15px', background: activeTab === 'posts' ? '#111' : '#000', color: activeTab === 'posts' ? '#fff' : '#888', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderLeft: '1px solid #333' }}
+                        style={{
+                            flex: 1,
+                            padding: '16px',
+                            background: activeTab === 'posts' ? 'var(--color-background)' : 'transparent',
+                            color: activeTab === 'posts' ? 'var(--color-text-main)' : 'var(--color-text-muted)',
+                            border: 'none',
+                            borderLeft: '1px solid var(--color-border)',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                        }}
                     >
                         Posts
                     </button>
                 </div>
 
-                {/* Tab Content: Media (Existing) */}
+                {/* Media Tab */}
                 {activeTab === 'media' && (
                     <>
-                        <div style={{ padding: '20px', borderBottom: '1px solid #333' }}>
-                            <h3 style={{ marginBottom: '15px', color: '#fff', fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase' }}>Upload Image</h3>
+                        <div style={{ padding: '20px', borderBottom: '1px solid var(--color-border)' }}>
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -417,286 +481,482 @@ Wrap up with final thoughts and a call to action.
                                 style={{ display: 'none' }}
                                 id="sidebar-upload"
                             />
-                            <label htmlFor="sidebar-upload" className="btn-primary" style={{ display: 'block', textAlign: 'center', cursor: 'pointer', padding: '10px' }}>
-                                {uploading ? 'Uploading...' : '+ Upload New Image'}
+                            <label htmlFor="sidebar-upload" style={{
+                                display: 'block',
+                                textAlign: 'center',
+                                padding: '12px',
+                                background: 'var(--color-primary)',
+                                color: 'var(--color-background)',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontFamily: 'var(--font-sans)',
+                                fontWeight: '600',
+                                fontSize: '14px'
+                            }}>
+                                {uploading ? 'Uploading...' : '+ Upload Image'}
                             </label>
                         </div>
 
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 {images.map((img) => (
-                                    <div key={img.name} className="img-card" onClick={() => insertImageToContent(img.url)}>
-                                        <div style={{ height: '100px', overflow: 'hidden', borderRadius: '6px' }}>
+                                    <div key={img.name} style={{
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: '8px',
+                                        overflow: 'hidden',
+                                        background: 'var(--color-background)'
+                                    }}>
+                                        <div style={{ height: '80px', overflow: 'hidden', cursor: 'pointer' }}
+                                            onClick={() => insertImageToContent(img.url)}>
                                             <img src={img.url} alt={img.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         </div>
-                                        <div className="img-actions">
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); setAsCover(img.url); }} title="Set as Cover" className="action-btn">★</button>
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); insertImageToContent(img.url); }} title="Insert to Post" className="action-btn">＋</button>
+                                        <div style={{ display: 'flex', borderTop: '1px solid var(--color-border)' }}>
                                             <button
-                                                type="button"
-                                                onClick={(e) => { e.stopPropagation(); handleDeleteImage(img.name); }}
-                                                title="Delete"
-                                                className="action-btn delete"
-                                                style={{ color: deleteConfirm === img.name ? 'red' : '' }}
+                                                onClick={() => setAsCover(img.url)}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '8px',
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    borderRight: '1px solid var(--color-border)',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    color: 'var(--color-text-muted)'
+                                                }}
+                                                title="Set as cover"
                                             >
-                                                {deleteConfirm === img.name ? 'CONFIRM?' : '🗑'}
+                                                Cover
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteImage(img.name)}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '8px',
+                                                    background: deleteConfirm === img.name ? '#dc3545' : 'transparent',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px',
+                                                    color: deleteConfirm === img.name ? '#fff' : 'var(--color-text-muted)'
+                                                }}
+                                            >
+                                                {deleteConfirm === img.name ? 'Confirm?' : 'Delete'}
                                             </button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
+                            {images.length === 0 && (
+                                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '40px' }}>
+                                    No images uploaded yet
+                                </p>
+                            )}
                         </div>
                     </>
                 )}
 
-                {/* Tab Content: Posts (New) */}
+                {/* Posts Tab */}
                 {activeTab === 'posts' && (
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
-                        <div style={{ marginBottom: '15px' }}>
-                            <button onClick={fetchPostsList} style={{ width: '100%', background: '#222', border: '1px solid #333', color: '#ccc', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}>
-                                ↻ Refresh List
-                            </button>
-                        </div>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+                        <button onClick={fetchPostsList} style={{
+                            width: '100%',
+                            marginBottom: '16px',
+                            padding: '10px',
+                            background: 'var(--color-background)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '13px',
+                            color: 'var(--color-text-muted)'
+                        }}>
+                            Refresh List
+                        </button>
+
                         {postsList.length === 0 ? (
-                            <p style={{ color: '#666', textAlign: 'center', fontSize: '13px' }}>No posts found.</p>
+                            <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', fontSize: '14px' }}>
+                                No posts found.
+                            </p>
                         ) : (
-                            <ul style={{ listStyle: 'none', padding: 0 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {postsList.map(post => (
-                                    <li key={post.id} style={{ marginBottom: '10px', background: '#0a0a0a', border: '1px solid #333', borderRadius: '6px', padding: '10px' }}>
-                                        <div style={{ fontWeight: 'bold', marginBottom: '5px', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{post.title}</div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#666' }}>
-                                            <span>{new Date(post.date).toLocaleDateString()}</span>
+                                    <div key={post.id} style={{
+                                        padding: '12px',
+                                        background: 'var(--color-background)',
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: '8px'
+                                    }}>
+                                        <div style={{
+                                            fontFamily: 'var(--font-sans)',
+                                            fontWeight: '600',
+                                            fontSize: '14px',
+                                            marginBottom: '8px',
+                                            color: 'var(--color-text-main)',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}>
+                                            {post.title}
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                                                {new Date(post.date).toLocaleDateString()}
+                                            </span>
                                             <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handleDeletePost(post.id);
-                                                }}
+                                                onClick={() => handleDeletePost(post.id)}
                                                 style={{
-                                                    background: deleteConfirm === post.id ? '#d34035' : 'transparent',
-                                                    color: deleteConfirm === post.id ? '#fff' : '#d34035',
-                                                    border: 'none',
+                                                    padding: '4px 12px',
+                                                    background: deleteConfirm === post.id ? '#dc3545' : 'transparent',
+                                                    color: deleteConfirm === post.id ? '#fff' : '#dc3545',
+                                                    border: deleteConfirm === post.id ? 'none' : '1px solid #dc3545',
+                                                    borderRadius: '4px',
                                                     cursor: 'pointer',
-                                                    fontWeight: 'bold',
-                                                    padding: deleteConfirm === post.id ? '4px 8px' : '0',
-                                                    borderRadius: '4px'
+                                                    fontSize: '12px',
+                                                    fontWeight: '600'
                                                 }}
                                             >
-                                                {deleteConfirm === post.id ? 'REALLY DELETE?' : 'DELETE'}
+                                                {deleteConfirm === post.id ? 'Confirm?' : 'Delete'}
                                             </button>
                                         </div>
-                                    </li>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
+                        )}
+
+                        {postsList.length > 0 && (
+                            <button
+                                onClick={handleDeleteAllPosts}
+                                style={{
+                                    width: '100%',
+                                    marginTop: '24px',
+                                    padding: '12px',
+                                    background: 'transparent',
+                                    border: '1px solid #dc3545',
+                                    color: '#dc3545',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'var(--font-sans)',
+                                    fontWeight: '600',
+                                    fontSize: '13px'
+                                }}
+                            >
+                                Delete All Posts
+                            </button>
                         )}
                     </div>
                 )}
             </div>
 
-            {/* --- MAIN AREA --- */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* MAIN AREA */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--color-background)' }}>
 
                 {/* Header / Toolbar */}
-                <div style={{ padding: '15px 20px', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0a' }}>
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: '1px solid #333', color: '#ccc', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px' }}>
+                <div style={{
+                    padding: '16px 24px',
+                    borderBottom: '1px solid var(--color-border)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        <button
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            style={{
+                                background: 'var(--color-surface)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '6px',
+                                padding: '8px 12px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                color: 'var(--color-text-main)'
+                            }}
+                        >
                             {isSidebarOpen ? '◀' : '▶'}
                         </button>
-                        <h2 style={{ fontSize: '20px', margin: 0, fontWeight: '600' }}>Write Post</h2>
+                        <h2 style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            margin: 0,
+                            color: 'var(--color-text-main)'
+                        }}>
+                            New Article
+                        </h2>
                     </div>
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                        {activeTab === 'posts' && postsList.length > 0 && (
-                            <button
-                                onClick={handleDeleteAllPosts}
-                                style={{ background: '#330000', color: '#ff6b6b', border: '1px solid #660000', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px' }}
-                            >
-                                ⚠ Delete All Posts
-                            </button>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        {message && (
+                            <span style={{
+                                fontFamily: 'var(--font-sans)',
+                                fontSize: '14px',
+                                color: status === 'error' ? '#dc3545' : '#28a745'
+                            }}>
+                                {message}
+                            </span>
                         )}
-                        {message && <span style={{ color: status === 'error' ? '#ff6b6b' : '#69db7c', fontSize: '14px', fontWeight: 'bold' }}>{message}</span>}
-                        <button className="btn-primary" onClick={handleSubmit} disabled={status === 'loading'}>
-                            {status === 'loading' ? 'Publishing...' : 'Publish Post'}
+                        <button
+                            onClick={handleSubmit}
+                            disabled={status === 'loading'}
+                            style={{
+                                padding: '10px 24px',
+                                background: 'var(--color-primary)',
+                                color: 'var(--color-background)',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontFamily: 'var(--font-sans)',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: status === 'loading' ? 'wait' : 'pointer',
+                                opacity: status === 'loading' ? 0.7 : 1
+                            }}
+                        >
+                            {status === 'loading' ? 'Publishing...' : 'Publish'}
                         </button>
                     </div>
                 </div>
 
-                {/* Form Inputs Area - High Contrast */}
-                <div style={{ padding: '20px', background: '#050505', borderBottom: '1px solid #333' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                {/* Form Inputs */}
+                <div style={{ padding: '24px', borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                         <div>
-                            <label className="input-label">Title</label>
-                            <input name="title" value={formData.title} onChange={handleChange} placeholder="Enter Title..." className="input-field" autoFocus />
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Title
+                            </label>
+                            <input
+                                name="title"
+                                value={formData.title}
+                                onChange={handleChange}
+                                placeholder="Article title..."
+                                autoFocus
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '6px',
+                                    fontSize: '16px',
+                                    fontFamily: 'var(--font-sans)',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            />
                         </div>
                         <div>
-                            <label className="input-label">Slug</label>
-                            <input name="slug" value={formData.slug} onChange={handleChange} placeholder="url-slug" className="input-field" />
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Slug
+                            </label>
+                            <input
+                                name="slug"
+                                value={formData.slug}
+                                onChange={handleChange}
+                                placeholder="url-slug"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '6px',
+                                    fontSize: '14px',
+                                    fontFamily: 'var(--font-sans)',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            />
                         </div>
                         <div>
-                            <label className="input-label">Tag</label>
-                            <select name="tag" value={formData.tag} onChange={handleChange} className="input-field">
-                                <option>Trend</option><option>Classic</option><option>Guide</option><option>News</option>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Category
+                            </label>
+                            <select
+                                name="tag"
+                                value={formData.tag}
+                                onChange={handleChange}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '6px',
+                                    fontSize: '14px',
+                                    fontFamily: 'var(--font-sans)',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            >
+                                <option>Trend</option>
+                                <option>Classic</option>
+                                <option>Guide</option>
+                                <option>News</option>
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '15px' }}>
-                        <div style={{ flex: 2 }}>
-                            <label className="input-label">Summary</label>
-                            <input name="summary" value={formData.summary} onChange={handleChange} placeholder="Short summary for the home page..." className="input-field" />
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Summary
+                            </label>
+                            <input
+                                name="summary"
+                                value={formData.summary}
+                                onChange={handleChange}
+                                placeholder="Brief description for the article card..."
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '6px',
+                                    fontSize: '14px',
+                                    fontFamily: 'var(--font-sans)',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            />
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <label className="input-label">Cover Image URL</label>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <input name="image" value={formData.image} onChange={handleChange} placeholder="Cover Image URL" className="input-field" style={{ flex: 1 }} />
-                                {formData.image && <img src={formData.image} alt="cover" style={{ width: '38px', height: '38px', borderRadius: '4px', border: '1px solid #333' }} />}
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Cover Image
+                            </label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <input
+                                    name="image"
+                                    value={formData.image}
+                                    onChange={handleChange}
+                                    placeholder="Image URL or upload from sidebar"
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px 16px',
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: '6px',
+                                        fontSize: '14px',
+                                        fontFamily: 'var(--font-sans)',
+                                        background: 'var(--color-background)',
+                                        color: 'var(--color-text-main)'
+                                    }}
+                                />
+                                {formData.image && (
+                                    <img
+                                        src={formData.image}
+                                        alt="cover"
+                                        style={{
+                                            width: '44px',
+                                            height: '44px',
+                                            borderRadius: '6px',
+                                            objectFit: 'cover',
+                                            border: '1px solid var(--color-border)'
+                                        }}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Markdown Toolbar */}
-                <div style={{ padding: '8px 20px', background: '#111', borderBottom: '1px solid #333', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ color: '#666', fontSize: '12px', fontWeight: 'bold', marginRight: '8px', textTransform: 'uppercase' }}>Toolbar</span>
-                    <button type="button" onClick={() => insertMarkdown('**', '**')} style={toolbarBtnStyle} title="Bold">B</button>
-                    <button type="button" onClick={() => insertMarkdown('_', '_')} style={{ ...toolbarBtnStyle, fontStyle: 'italic' }} title="Italic">I</button>
-                    <button type="button" onClick={() => insertMarkdown('# ', '')} style={toolbarBtnStyle} title="H1">H1</button>
-                    <button type="button" onClick={() => insertMarkdown('## ', '')} style={toolbarBtnStyle} title="H2">H2</button>
-                    <button type="button" onClick={() => insertMarkdown('> ', '')} style={toolbarBtnStyle} title="Quote">❞</button>
-                    <button type="button" onClick={() => insertMarkdown('```\n', '\n```')} style={toolbarBtnStyle} title="Code">{ }</button>
-                    <button type="button" onClick={() => insertMarkdown('[', '](url)')} style={toolbarBtnStyle} title="Link">🔗</button>
-                    <div style={{ width: '1px', height: '20px', background: '#333', margin: '0 8px' }}></div>
-                    <button type="button" onClick={insertTemplate} style={{ ...toolbarBtnStyle, width: 'auto', padding: '4px 12px' }}>📄 Load Template</button>
+                <div style={{
+                    padding: '12px 24px',
+                    borderBottom: '1px solid var(--color-border)',
+                    display: 'flex',
+                    gap: '8px',
+                    alignItems: 'center',
+                    background: 'var(--color-surface)'
+                }}>
+                    <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: '8px' }}>
+                        Format
+                    </span>
+                    {[
+                        { label: 'B', action: () => insertMarkdown('**', '**'), title: 'Bold' },
+                        { label: 'I', action: () => insertMarkdown('_', '_'), title: 'Italic', style: { fontStyle: 'italic' } },
+                        { label: 'H1', action: () => insertMarkdown('# ', ''), title: 'Heading 1' },
+                        { label: 'H2', action: () => insertMarkdown('## ', ''), title: 'Heading 2' },
+                        { label: '"', action: () => insertMarkdown('> ', ''), title: 'Quote' },
+                        { label: '{ }', action: () => insertMarkdown('```\n', '\n```'), title: 'Code block' },
+                        { label: 'Link', action: () => insertMarkdown('[', '](url)'), title: 'Link' },
+                    ].map((btn, i) => (
+                        <button
+                            key={i}
+                            onClick={btn.action}
+                            title={btn.title}
+                            style={{
+                                padding: '6px 12px',
+                                background: 'var(--color-background)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                color: 'var(--color-text-main)',
+                                ...btn.style
+                            }}
+                        >
+                            {btn.label}
+                        </button>
+                    ))}
+                    <div style={{ width: '1px', height: '20px', background: 'var(--color-border)', margin: '0 8px' }} />
+                    <button
+                        onClick={insertTemplate}
+                        style={{
+                            padding: '6px 16px',
+                            background: 'var(--color-background)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            color: 'var(--color-text-main)'
+                        }}
+                    >
+                        Load Template
+                    </button>
                 </div>
 
                 {/* Split View Editor */}
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                    {/* Editor - Left */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid #333' }}>
+                    {/* Editor */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--color-border)' }}>
                         <textarea
                             id="content-editor"
                             name="content"
                             value={formData.content}
                             onChange={handleChange}
-                            placeholder="# Start writing here..."
+                            placeholder="Start writing in Markdown..."
                             style={{
                                 flex: 1,
-                                padding: '20px',
-                                background: '#000',
-                                color: '#eee',
+                                padding: '24px',
+                                background: 'var(--color-background)',
+                                color: 'var(--color-text-main)',
                                 border: 'none',
                                 resize: 'none',
-                                fontFamily: '"Fira Code", monospace',
-                                fontSize: '16px',
-                                lineHeight: '1.6',
+                                fontFamily: '"Fira Code", "SF Mono", Monaco, monospace',
+                                fontSize: '15px',
+                                lineHeight: '1.7',
                                 outline: 'none'
                             }}
                         />
                     </div>
 
-                    {/* Preview - Right */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0a0a0a' }}>
-                        <div style={{ padding: '8px 20px', background: '#111', borderBottom: '1px solid #333', color: '#888', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                            Live Preview
+                    {/* Preview */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-surface)' }}>
+                        <div style={{
+                            padding: '12px 24px',
+                            borderBottom: '1px solid var(--color-border)',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            color: 'var(--color-text-muted)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.1em'
+                        }}>
+                            Preview
                         </div>
                         <div
-                            className="prose-preview"
+                            className="article-content"
                             style={{
                                 flex: 1,
                                 padding: '40px',
-                                overflowY: 'auto'
+                                overflowY: 'auto',
+                                background: 'var(--color-background)'
                             }}
-                            dangerouslySetInnerHTML={{ __html: previewHtml || '<p style="color:#444; font-style:italic;">Preview will appear here...</p>' }}
+                            dangerouslySetInnerHTML={{
+                                __html: previewHtml || '<p style="color: var(--color-text-muted); font-style: italic;">Preview will appear here as you type...</p>'
+                            }}
                         />
                     </div>
                 </div>
             </div>
-
-            <style jsx global>{`
-                .btn-primary {
-                    background: #fff;
-                    color: #000;
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 6px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .btn-primary:hover {
-                    opacity: 0.9;
-                    transform: translateY(-1px);
-                }
-                .btn-primary:disabled { opacity: 0.5; cursor: wait; }
-
-                .input-label {
-                    display: block;
-                    font-size: 11px;
-                    color: #888;
-                    margin-bottom: 6px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                .input-field {
-                    background: #1a1a1a;
-                    border: 1px solid #333;
-                    color: #fff;
-                    padding: 10px 12px;
-                    border-radius: 6px;
-                    width: 100%;
-                    font-size: 14px;
-                    transition: border-color 0.2s;
-                }
-                .input-field:focus {
-                    border-color: #888;
-                    outline: none; 
-                }
-
-                .img-card {
-                    position: relative;
-                    border: 1px solid #333;
-                    border-radius: 6px;
-                    background: #000;
-                    transition: all 0.2s;
-                    cursor: pointer;
-                }
-                .img-card:hover {
-                    border-color: #666;
-                    transform: translateY(-2px);
-                }
-                .img-actions {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr 1fr;
-                    border-top: 1px solid #333;
-                }
-                .action-btn {
-                    background: #111;
-                    border: none;
-                    border-right: 1px solid #333;
-                    color: #ccc;
-                    padding: 8px 0;
-                    cursor: pointer;
-                    font-size: 12px;
-                }
-                .action-btn:last-child { border-right: none; }
-                .action-btn:hover { background: #222; color: #fff; }
-                .action-btn.delete:hover { background: #330000; color: #ff6b6b; }
-
-                /* Preview Styles */
-                .prose-preview { color: #e0e0e0; line-height: 1.7; max-width: 800px; margin: 0 auto; }
-                .prose-preview h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; color: #fff; letter-spacing: -0.02em; }
-                .prose-preview h2 { font-size: 1.8rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #fff; border-bottom: 1px solid #333; padding-bottom: 0.5rem; }
-                .prose-preview h3 { font-size: 1.4rem; font-weight: 600; margin-top: 1.5rem; color: #f0f0f0; }
-                .prose-preview p { margin-bottom: 1.2rem; font-size: 1.05rem; color: #ccc; }
-                .prose-preview ul, .prose-preview ol { padding-left: 1.5rem; margin-bottom: 1.5rem; color: #ccc; }
-                .prose-preview li { margin-bottom: 0.5rem; }
-                .prose-preview blockquote { border-left: 4px solid #444; padding-left: 1rem; margin: 1.5rem 0; font-style: italic; color: #888; }
-                .prose-preview img { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; border: 1px solid #333; }
-                .prose-preview code { background: #222; padding: 0.2em 0.4em; border-radius: 4px; font-family: monospace; font-size: 0.9em; color: #f0f0f0; }
-                .prose-preview pre { background: #111; padding: 1.5rem; border-radius: 8px; overflow-x: auto; margin: 1.5rem 0; border: 1px solid #333; }
-                .prose-preview pre code { background: transparent; padding: 0; color: #ddd; }
-                .prose-preview a { color: #5c7cfa; text-decoration: none; border-bottom: 1px dotted #5c7cfa; }
-                .prose-preview a:hover { border-bottom-style: solid; }
-            `}</style>
         </div>
     );
 }

@@ -1,39 +1,35 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Inter, Outfit } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 export const metadata = {
   metadataBase: new URL('https://minyoungci.github.io'),
   title: {
-    default: "AI Intelligence Blog | Deep Insights for Leaders",
-    template: "%s | AI Intelligence"
+    default: "The Gradient | AI & Machine Learning Insights",
+    template: "%s | The Gradient"
   },
-  description: "Weekly AI news, deep analysis, and intelligence for engineers and leaders. Stay ahead of the curve.",
-  keywords: ["AI", "Artificial Intelligence", "Machine Learning", "Tech Blog", "Engineering"],
-  authors: [{ name: "AI Editorial Team" }],
+  description: "In-depth articles and analysis on artificial intelligence, machine learning, and the future of technology.",
+  keywords: ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "Tech Blog", "Research"],
+  authors: [{ name: "The Gradient Team" }],
   openGraph: {
-    title: 'AI Intelligence Blog',
-    description: 'Weekly AI news, deep analysis, and intelligence for engineers and leaders.',
+    title: 'The Gradient',
+    description: 'In-depth articles and analysis on artificial intelligence and machine learning.',
     url: 'https://minyoungci.github.io',
-    siteName: 'AI Intelligence',
+    siteName: 'The Gradient',
     images: [
       {
-        url: '/favicon.ico', // Fallback image
+        url: '/favicon.ico',
         width: 1200,
         height: 630,
       },
     ],
-    locale: 'ko_KR',
+    locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Intelligence Blog',
-    description: 'Weekly AI news and deep insights.',
+    title: 'The Gradient',
+    description: 'In-depth AI & ML insights.',
     images: ['/favicon.ico'],
   },
   robots: {
@@ -44,10 +40,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning={true} className={`${inter.variable} ${outfit.variable}`}>
-      <body className={inter.className} suppressHydrationWarning={true}>
+    <html lang="en" suppressHydrationWarning={true}>
+      <body suppressHydrationWarning={true}>
         <Navbar />
-        <main style={{ minHeight: 'calc(100vh - 400px)' }}>
+        <main style={{ minHeight: 'calc(100vh - 300px)' }}>
           {children}
         </main>
         <Footer />
