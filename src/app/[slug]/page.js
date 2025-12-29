@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { getPostData, getSortedPostsData } from '@/lib/posts';
 import RelatedPosts from '@/components/RelatedPosts';
 import FloatingSubscribe from '@/components/FloatingSubscribe';
+import EditButton from '@/components/EditButton';
+import ReadingProgress from '@/components/ReadingProgress';
+import CodeBlockEnhancer from '@/components/CodeBlockEnhancer';
 
 export async function generateStaticParams() {
   const posts = await getSortedPostsData();
@@ -86,6 +89,7 @@ export default async function Post({ params }) {
 
   return (
     <>
+      <ReadingProgress />
       <article className="article animate-fade-in">
         {/* SEO Structured Data */}
         <script
@@ -186,6 +190,8 @@ export default async function Post({ params }) {
       </article>
 
       <FloatingSubscribe />
+      <EditButton postId={decodedSlug} />
+      <CodeBlockEnhancer />
     </>
   );
 }

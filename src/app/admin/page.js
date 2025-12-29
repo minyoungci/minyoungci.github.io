@@ -2,13 +2,16 @@
 
 export const dynamic = 'force-static';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { remark } from 'remark';
 import html from 'remark-html';
 
-export default function AdminPage() {
-    // Hydration Fix: Ensure component only renders on client
+function AdminContent() {
+    const searchParams = useSearchParams();
+    const editPostId = searchParams.get('edit');
+
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
@@ -18,6 +21,8 @@ export default function AdminPage() {
     // Editor State
     const [previewHtml, setPreviewHtml] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingPostId, setEditingPostId] = useState(null);
 
     // Image Manager State
     const [images, setImages] = useState([]);
@@ -25,49 +30,12 @@ export default function AdminPage() {
     const fileInputRef = useRef(null);
 
     // Post Manager State
-    const [activeTab, setActiveTab] = useState('media');
+    const [activeTab, setActiveTab] = useState('posts');
     const [postsList, setPostsList] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Two-step Delete State
     const [deleteConfirm, setDeleteConfirm] = useState(null);
-
-    const fetchPostsList = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('posts')
-                .select('id, title, date')
-                .order('date', { ascending: false });
-            if (error) throw error;
-            setPostsList(data || []);
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-        }
-    };
-
-    const handleDeletePost = async (id) => {
-        if (deleteConfirm !== id) {
-            setDeleteConfirm(id);
-            setTimeout(() => setDeleteConfirm(null), 3000);
-            return;
-        }
-
-        try {
-            const { error } = await supabase.from('posts').delete().eq('id', id);
-            if (error) throw error;
-            setDeleteConfirm(null);
-            fetchPostsList();
-            alert('Post deleted successfully');
-        } catch (error) {
-            console.error('Error deleting post:', error);
-            alert('Failed: ' + error.message);
-        }
-    };
-
-    useEffect(() => {
-        if (activeTab === 'posts') {
-            fetchPostsList();
-        }
-    }, [activeTab]);
 
     // Form States
     const [formData, setFormData] = useState({
@@ -82,12 +50,111 @@ export default function AdminPage() {
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
 
+    // Fetch Posts
+    const fetchPostsList = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('posts')
+                .select('id, title, date, tag, summary')
+                .order('date', { ascending: false });
+            if (error) throw error;
+            setPostsList(data || []);
+        } catch (error) {
+            console.error('Error fetching posts:', error);
+        }
+    };
+
+    // Load post for editing
+    const handleEditPost = async (postId) => {
+        try {
+            const { data, error } = await supabase
+                .from('posts')
+                .select('*')
+                .eq('id', postId)
+                .single();
+
+            if (error) throw error;
+
+            setFormData({
+                title: data.title || '',
+                slug: data.id || '',
+                tag: data.tag || 'Trend',
+                summary: data.summary || '',
+                content: data.content || '',
+                image: data.image || ''
+            });
+            setIsEditMode(true);
+            setEditingPostId(postId);
+            setMessage('');
+            setStatus('idle');
+        } catch (error) {
+            console.error('Error loading post:', error);
+            alert('Failed to load post: ' + error.message);
+        }
+    };
+
+    // Cancel edit mode
+    const handleCancelEdit = () => {
+        setIsEditMode(false);
+        setEditingPostId(null);
+        setFormData({
+            title: '',
+            slug: '',
+            tag: 'Trend',
+            summary: '',
+            content: '',
+            image: ''
+        });
+        setMessage('');
+        setStatus('idle');
+    };
+
+    // Delete post
+    const handleDeletePost = async (id) => {
+        if (deleteConfirm !== id) {
+            setDeleteConfirm(id);
+            setTimeout(() => setDeleteConfirm(null), 3000);
+            return;
+        }
+
+        try {
+            const { error } = await supabase.from('posts').delete().eq('id', id);
+            if (error) throw error;
+            setDeleteConfirm(null);
+            fetchPostsList();
+            if (editingPostId === id) {
+                handleCancelEdit();
+            }
+            setMessage('Post deleted');
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            alert('Failed: ' + error.message);
+        }
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchPostsList();
+            fetchImages();
+        }
+    }, [isAuthenticated]);
+
+    // Auto-load post if edit query param is present
+    useEffect(() => {
+        if (isAuthenticated && editPostId && postsList.length > 0) {
+            const decodedId = decodeURIComponent(editPostId);
+            const postExists = postsList.some(p => p.id === decodedId);
+            if (postExists && editingPostId !== decodedId) {
+                handleEditPost(decodedId);
+            }
+        }
+    }, [isAuthenticated, editPostId, postsList]);
+
     // Authentication
     const handleLogin = (e) => {
         e.preventDefault();
         if (password === '1234') {
             setIsAuthenticated(true);
-            fetchImages();
         } else {
             alert('Incorrect password');
         }
@@ -170,30 +237,6 @@ export default function AdminPage() {
         }
     };
 
-    const handleDeleteAllPosts = async () => {
-        if (!confirm('WARNING: This will delete ALL posts. This cannot be undone. Are you sure?')) return;
-
-        try {
-            const { data: posts, error: fetchError } = await supabase.from('posts').select('id');
-            if (fetchError) throw fetchError;
-
-            if (posts.length === 0) {
-                alert('No posts to delete.');
-                return;
-            }
-
-            const ids = posts.map(p => p.id);
-            const { error: deleteError } = await supabase.from('posts').delete().in('id', ids);
-            if (deleteError) throw deleteError;
-
-            setPostsList([]);
-            setMessage('All posts deleted.');
-        } catch (error) {
-            console.error('Delete All Error:', error);
-            alert('Failed: ' + error.message);
-        }
-    };
-
     // Toolbar & Editor Logic
     const insertMarkdown = (prefix, suffix) => {
         const textarea = document.getElementById('content-editor');
@@ -236,21 +279,9 @@ Explain the first major insight with supporting details.
 
 Develop the second insight with examples or data.
 
-### Third Point
-
-Present the third insight and its implications.
-
-## Analysis
-
-Provide deeper analysis, connecting the insights together.
-
 ## Conclusion
 
 Summarize key takeaways and suggest next steps or further reading.
-
----
-
-*What are your thoughts on this topic? Share in the comments below.*
 `;
         setFormData(prev => ({ ...prev, content: template }));
     };
@@ -271,9 +302,9 @@ Summarize key takeaways and suggest next steps or further reading.
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        if (name === 'title' && !formData.slug) {
+        if (name === 'title' && !isEditMode && !formData.slug) {
             const generatedSlug = value.toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/[^a-z0-9가-힣]+/g, '-')
                 .replace(/(^-|-$)+/g, '');
             setFormData(prev => ({ ...prev, title: value, slug: generatedSlug }));
         } else {
@@ -296,15 +327,14 @@ Summarize key takeaways and suggest next steps or further reading.
             } catch (error) {
                 console.error('Preview error', error);
             }
-        }, 500);
+        }, 300);
         return () => clearTimeout(timer);
     }, [formData.content]);
 
-    // Publishing
+    // Publishing / Updating
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation
         if (!formData.slug || !formData.slug.trim()) {
             setStatus('error');
             setMessage('Slug is required');
@@ -319,40 +349,66 @@ Summarize key takeaways and suggest next steps or further reading.
         setStatus('loading');
 
         try {
-            const { error } = await supabase
-                .from('posts')
-                .insert([{
-                    id: formData.slug.trim(),
-                    title: formData.title.trim(),
-                    tag: formData.tag,
-                    summary: formData.summary?.trim() || '',
-                    content: formData.content || '',
-                    image: formData.image || null,
-                    date: new Date().toISOString()
-                }]);
+            if (isEditMode) {
+                // Update existing post
+                const { error } = await supabase
+                    .from('posts')
+                    .update({
+                        title: formData.title.trim(),
+                        tag: formData.tag,
+                        summary: formData.summary?.trim() || '',
+                        content: formData.content || '',
+                        image: formData.image || null,
+                    })
+                    .eq('id', editingPostId);
 
-            if (error) throw error;
+                if (error) throw error;
 
-            setStatus('success');
-            setMessage('Published Successfully!');
+                setStatus('success');
+                setMessage('Updated successfully!');
+                fetchPostsList();
+            } else {
+                // Create new post
+                const { error } = await supabase
+                    .from('posts')
+                    .insert([{
+                        id: formData.slug.trim(),
+                        title: formData.title.trim(),
+                        tag: formData.tag,
+                        summary: formData.summary?.trim() || '',
+                        content: formData.content || '',
+                        image: formData.image || null,
+                        date: new Date().toISOString()
+                    }]);
 
-            setFormData({
-                title: '',
-                slug: '',
-                tag: 'Trend',
-                summary: '',
-                content: '',
-                image: ''
-            });
+                if (error) throw error;
 
+                setStatus('success');
+                setMessage('Published successfully!');
+                fetchPostsList();
+
+                setFormData({
+                    title: '',
+                    slug: '',
+                    tag: 'Trend',
+                    summary: '',
+                    content: '',
+                    image: ''
+                });
+            }
         } catch (error) {
-            console.error('Error publishing:', error);
+            console.error('Error:', error);
             setStatus('error');
             setMessage(`Error: ${error.message}`);
         }
     };
 
-    // Hydration check
+    // Filter posts by search
+    const filteredPosts = postsList.filter(post =>
+        post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.id?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     if (!mounted) return null;
 
     if (!isAuthenticated) {
@@ -381,7 +437,7 @@ Summarize key takeaways and suggest next steps or further reading.
                         marginBottom: '8px',
                         color: 'var(--color-text-main)'
                     }}>
-                        Write a Post
+                        Admin Panel
                     </h1>
                     <p style={{
                         fontFamily: 'var(--font-sans)',
@@ -389,7 +445,7 @@ Summarize key takeaways and suggest next steps or further reading.
                         color: 'var(--color-text-muted)',
                         marginBottom: '32px'
                     }}>
-                        Enter your access code to continue
+                        Enter your access code
                     </p>
                     <input
                         type="password"
@@ -420,7 +476,7 @@ Summarize key takeaways and suggest next steps or further reading.
                         fontWeight: '600',
                         cursor: 'pointer'
                     }}>
-                        Access Editor
+                        Login
                     </button>
                 </form>
             </div>
@@ -428,14 +484,14 @@ Summarize key takeaways and suggest next steps or further reading.
     }
 
     return (
-        <div style={{ display: 'flex', height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', height: 'calc(100vh - 70px)', overflow: 'hidden' }}>
 
             {/* LEFT SIDEBAR */}
             <div style={{
-                width: isSidebarOpen ? '320px' : '0',
+                width: isSidebarOpen ? '300px' : '0',
                 background: 'var(--color-surface)',
                 borderRight: '1px solid var(--color-border)',
-                transition: 'width 0.3s ease',
+                transition: 'width 0.2s ease',
                 display: 'flex',
                 flexDirection: 'column',
                 flexShrink: 0,
@@ -444,48 +500,162 @@ Summarize key takeaways and suggest next steps or further reading.
                 {/* Tabs */}
                 <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)' }}>
                     <button
-                        onClick={() => setActiveTab('media')}
-                        style={{
-                            flex: 1,
-                            padding: '16px',
-                            background: activeTab === 'media' ? 'var(--color-background)' : 'transparent',
-                            color: activeTab === 'media' ? 'var(--color-text-main)' : 'var(--color-text-muted)',
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontFamily: 'var(--font-sans)',
-                            fontWeight: '600',
-                            fontSize: '13px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
-                        }}
-                    >
-                        Media
-                    </button>
-                    <button
                         onClick={() => setActiveTab('posts')}
                         style={{
                             flex: 1,
-                            padding: '16px',
+                            padding: '14px',
                             background: activeTab === 'posts' ? 'var(--color-background)' : 'transparent',
                             color: activeTab === 'posts' ? 'var(--color-text-main)' : 'var(--color-text-muted)',
                             border: 'none',
-                            borderLeft: '1px solid var(--color-border)',
                             cursor: 'pointer',
                             fontFamily: 'var(--font-sans)',
                             fontWeight: '600',
-                            fontSize: '13px',
+                            fontSize: '12px',
                             textTransform: 'uppercase',
                             letterSpacing: '0.05em'
                         }}
                     >
                         Posts
                     </button>
+                    <button
+                        onClick={() => setActiveTab('media')}
+                        style={{
+                            flex: 1,
+                            padding: '14px',
+                            background: activeTab === 'media' ? 'var(--color-background)' : 'transparent',
+                            color: activeTab === 'media' ? 'var(--color-text-main)' : 'var(--color-text-muted)',
+                            border: 'none',
+                            borderLeft: '1px solid var(--color-border)',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            fontWeight: '600',
+                            fontSize: '12px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                        }}
+                    >
+                        Media
+                    </button>
                 </div>
+
+                {/* Posts Tab */}
+                {activeTab === 'posts' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        {/* Search */}
+                        <div style={{ padding: '12px' }}>
+                            <input
+                                type="text"
+                                placeholder="Search posts..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    fontFamily: 'var(--font-sans)',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            />
+                        </div>
+
+                        {/* New Post Button */}
+                        <div style={{ padding: '0 12px 12px' }}>
+                            <button
+                                onClick={handleCancelEdit}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    background: isEditMode ? 'var(--color-background)' : 'var(--color-primary)',
+                                    color: isEditMode ? 'var(--color-text-main)' : 'var(--color-background)',
+                                    border: isEditMode ? '1px solid var(--color-border)' : 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'var(--font-sans)',
+                                    fontWeight: '600',
+                                    fontSize: '13px'
+                                }}
+                            >
+                                + New Post
+                            </button>
+                        </div>
+
+                        {/* Posts List */}
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 12px' }}>
+                            {filteredPosts.length === 0 ? (
+                                <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', fontSize: '13px', padding: '20px 0' }}>
+                                    No posts found
+                                </p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {filteredPosts.map(post => (
+                                        <div
+                                            key={post.id}
+                                            style={{
+                                                padding: '10px 12px',
+                                                background: editingPostId === post.id ? 'var(--color-primary)' : 'var(--color-background)',
+                                                border: '1px solid var(--color-border)',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => handleEditPost(post.id)}
+                                        >
+                                            <div style={{
+                                                fontFamily: 'var(--font-sans)',
+                                                fontWeight: '500',
+                                                fontSize: '13px',
+                                                marginBottom: '4px',
+                                                color: editingPostId === post.id ? 'var(--color-background)' : 'var(--color-text-main)',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
+                                            }}>
+                                                {post.title || 'Untitled'}
+                                            </div>
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center'
+                                            }}>
+                                                <span style={{
+                                                    fontSize: '11px',
+                                                    color: editingPostId === post.id ? 'rgba(255,255,255,0.7)' : 'var(--color-text-muted)'
+                                                }}>
+                                                    {post.tag} · {new Date(post.date).toLocaleDateString()}
+                                                </span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeletePost(post.id);
+                                                    }}
+                                                    style={{
+                                                        padding: '2px 8px',
+                                                        background: deleteConfirm === post.id ? '#dc3545' : 'transparent',
+                                                        color: deleteConfirm === post.id ? '#fff' : '#dc3545',
+                                                        border: deleteConfirm === post.id ? 'none' : '1px solid #dc3545',
+                                                        borderRadius: '3px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '10px',
+                                                        fontWeight: '600'
+                                                    }}
+                                                >
+                                                    {deleteConfirm === post.id ? 'Confirm' : 'Delete'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Media Tab */}
                 {activeTab === 'media' && (
                     <>
-                        <div style={{ padding: '20px', borderBottom: '1px solid var(--color-border)' }}>
+                        <div style={{ padding: '12px', borderBottom: '1px solid var(--color-border)' }}>
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -497,29 +667,29 @@ Summarize key takeaways and suggest next steps or further reading.
                             <label htmlFor="sidebar-upload" style={{
                                 display: 'block',
                                 textAlign: 'center',
-                                padding: '12px',
+                                padding: '10px',
                                 background: 'var(--color-primary)',
                                 color: 'var(--color-background)',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                                 fontFamily: 'var(--font-sans)',
                                 fontWeight: '600',
-                                fontSize: '14px'
+                                fontSize: '13px'
                             }}>
                                 {uploading ? 'Uploading...' : '+ Upload Image'}
                             </label>
                         </div>
 
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                 {images.map((img) => (
                                     <div key={img.name} style={{
                                         border: '1px solid var(--color-border)',
-                                        borderRadius: '8px',
+                                        borderRadius: '6px',
                                         overflow: 'hidden',
                                         background: 'var(--color-background)'
                                     }}>
-                                        <div style={{ height: '80px', overflow: 'hidden', cursor: 'pointer' }}
+                                        <div style={{ height: '70px', overflow: 'hidden', cursor: 'pointer' }}
                                             onClick={() => insertImageToContent(img.url)}>
                                             <img src={img.url} alt={img.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         </div>
@@ -528,15 +698,14 @@ Summarize key takeaways and suggest next steps or further reading.
                                                 onClick={() => setAsCover(img.url)}
                                                 style={{
                                                     flex: 1,
-                                                    padding: '8px',
+                                                    padding: '6px',
                                                     background: 'transparent',
                                                     border: 'none',
                                                     borderRight: '1px solid var(--color-border)',
                                                     cursor: 'pointer',
-                                                    fontSize: '12px',
+                                                    fontSize: '10px',
                                                     color: 'var(--color-text-muted)'
                                                 }}
-                                                title="Set as cover"
                                             >
                                                 Cover
                                             </button>
@@ -544,142 +713,51 @@ Summarize key takeaways and suggest next steps or further reading.
                                                 onClick={() => handleDeleteImage(img.name)}
                                                 style={{
                                                     flex: 1,
-                                                    padding: '8px',
+                                                    padding: '6px',
                                                     background: deleteConfirm === img.name ? '#dc3545' : 'transparent',
                                                     border: 'none',
                                                     cursor: 'pointer',
-                                                    fontSize: '12px',
+                                                    fontSize: '10px',
                                                     color: deleteConfirm === img.name ? '#fff' : 'var(--color-text-muted)'
                                                 }}
                                             >
-                                                {deleteConfirm === img.name ? 'Confirm?' : 'Delete'}
+                                                {deleteConfirm === img.name ? 'Confirm' : 'Del'}
                                             </button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                             {images.length === 0 && (
-                                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '40px' }}>
-                                    No images uploaded yet
+                                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '30px' }}>
+                                    No images yet
                                 </p>
                             )}
                         </div>
                     </>
-                )}
-
-                {/* Posts Tab */}
-                {activeTab === 'posts' && (
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-                        <button onClick={fetchPostsList} style={{
-                            width: '100%',
-                            marginBottom: '16px',
-                            padding: '10px',
-                            background: 'var(--color-background)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: '13px',
-                            color: 'var(--color-text-muted)'
-                        }}>
-                            Refresh List
-                        </button>
-
-                        {postsList.length === 0 ? (
-                            <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', fontSize: '14px' }}>
-                                No posts found.
-                            </p>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {postsList.map(post => (
-                                    <div key={post.id} style={{
-                                        padding: '12px',
-                                        background: 'var(--color-background)',
-                                        border: '1px solid var(--color-border)',
-                                        borderRadius: '8px'
-                                    }}>
-                                        <div style={{
-                                            fontFamily: 'var(--font-sans)',
-                                            fontWeight: '600',
-                                            fontSize: '14px',
-                                            marginBottom: '8px',
-                                            color: 'var(--color-text-main)',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap'
-                                        }}>
-                                            {post.title}
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                                                {new Date(post.date).toLocaleDateString()}
-                                            </span>
-                                            <button
-                                                onClick={() => handleDeletePost(post.id)}
-                                                style={{
-                                                    padding: '4px 12px',
-                                                    background: deleteConfirm === post.id ? '#dc3545' : 'transparent',
-                                                    color: deleteConfirm === post.id ? '#fff' : '#dc3545',
-                                                    border: deleteConfirm === post.id ? 'none' : '1px solid #dc3545',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600'
-                                                }}
-                                            >
-                                                {deleteConfirm === post.id ? 'Confirm?' : 'Delete'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {postsList.length > 0 && (
-                            <button
-                                onClick={handleDeleteAllPosts}
-                                style={{
-                                    width: '100%',
-                                    marginTop: '24px',
-                                    padding: '12px',
-                                    background: 'transparent',
-                                    border: '1px solid #dc3545',
-                                    color: '#dc3545',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontFamily: 'var(--font-sans)',
-                                    fontWeight: '600',
-                                    fontSize: '13px'
-                                }}
-                            >
-                                Delete All Posts
-                            </button>
-                        )}
-                    </div>
                 )}
             </div>
 
             {/* MAIN AREA */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--color-background)' }}>
 
-                {/* Header / Toolbar */}
+                {/* Header */}
                 <div style={{
-                    padding: '16px 24px',
+                    padding: '12px 20px',
                     borderBottom: '1px solid var(--color-border)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center'
                 }}>
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                             style={{
                                 background: 'var(--color-surface)',
                                 border: '1px solid var(--color-border)',
-                                borderRadius: '6px',
-                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                padding: '6px 10px',
                                 cursor: 'pointer',
-                                fontSize: '14px',
+                                fontSize: '12px',
                                 color: 'var(--color-text-main)'
                             }}
                         >
@@ -687,84 +765,90 @@ Summarize key takeaways and suggest next steps or further reading.
                         </button>
                         <h2 style={{
                             fontFamily: 'var(--font-sans)',
-                            fontSize: '18px',
-                            fontWeight: '700',
+                            fontSize: '16px',
+                            fontWeight: '600',
                             margin: 0,
                             color: 'var(--color-text-main)'
                         }}>
-                            New Article
+                            {isEditMode ? 'Edit Post' : 'New Post'}
                         </h2>
+                        {isEditMode && (
+                            <span style={{
+                                fontSize: '12px',
+                                color: 'var(--color-text-muted)',
+                                background: 'var(--color-surface)',
+                                padding: '4px 8px',
+                                borderRadius: '4px'
+                            }}>
+                                /{editingPostId}/
+                            </span>
+                        )}
                     </div>
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         {message && (
                             <span style={{
                                 fontFamily: 'var(--font-sans)',
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 color: status === 'error' ? '#dc3545' : '#28a745'
                             }}>
                                 {message}
                             </span>
                         )}
+                        {isEditMode && (
+                            <button
+                                onClick={handleCancelEdit}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: 'transparent',
+                                    color: 'var(--color-text-muted)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '4px',
+                                    fontFamily: 'var(--font-sans)',
+                                    fontSize: '13px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        )}
                         <button
                             onClick={handleSubmit}
                             disabled={status === 'loading'}
                             style={{
-                                padding: '10px 24px',
+                                padding: '8px 20px',
                                 background: 'var(--color-primary)',
                                 color: 'var(--color-background)',
                                 border: 'none',
-                                borderRadius: '6px',
+                                borderRadius: '4px',
                                 fontFamily: 'var(--font-sans)',
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 fontWeight: '600',
                                 cursor: status === 'loading' ? 'wait' : 'pointer',
                                 opacity: status === 'loading' ? 0.7 : 1
                             }}
                         >
-                            {status === 'loading' ? 'Publishing...' : 'Publish'}
+                            {status === 'loading' ? 'Saving...' : (isEditMode ? 'Update' : 'Publish')}
                         </button>
                     </div>
                 </div>
 
                 {/* Form Inputs */}
-                <div style={{ padding: '24px', borderBottom: '1px solid var(--color-border)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Title
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Title *
                             </label>
                             <input
                                 name="title"
                                 value={formData.title}
                                 onChange={handleChange}
                                 placeholder="Article title..."
-                                autoFocus
                                 style={{
                                     width: '100%',
-                                    padding: '12px 16px',
+                                    padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '6px',
-                                    fontSize: '16px',
-                                    fontFamily: 'var(--font-sans)',
-                                    background: 'var(--color-background)',
-                                    color: 'var(--color-text-main)'
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Slug
-                            </label>
-                            <input
-                                name="slug"
-                                value={formData.slug}
-                                onChange={handleChange}
-                                placeholder="url-slug"
-                                style={{
-                                    width: '100%',
-                                    padding: '12px 16px',
-                                    border: '1px solid var(--color-border)',
-                                    borderRadius: '6px',
+                                    borderRadius: '4px',
                                     fontSize: '14px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
@@ -773,7 +857,29 @@ Summarize key takeaways and suggest next steps or further reading.
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Slug *
+                            </label>
+                            <input
+                                name="slug"
+                                value={formData.slug}
+                                onChange={handleChange}
+                                placeholder="url-slug"
+                                disabled={isEditMode}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '4px',
+                                    fontSize: '13px',
+                                    fontFamily: 'var(--font-sans)',
+                                    background: isEditMode ? 'var(--color-surface)' : 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                 Category
                             </label>
                             <select
@@ -782,10 +888,10 @@ Summarize key takeaways and suggest next steps or further reading.
                                 onChange={handleChange}
                                 style={{
                                     width: '100%',
-                                    padding: '12px 16px',
+                                    padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '6px',
-                                    fontSize: '14px',
+                                    borderRadius: '4px',
+                                    fontSize: '13px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
                                     color: 'var(--color-text-main)'
@@ -798,22 +904,22 @@ Summarize key takeaways and suggest next steps or further reading.
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                 Summary
                             </label>
                             <input
                                 name="summary"
                                 value={formData.summary}
                                 onChange={handleChange}
-                                placeholder="Brief description for the article card..."
+                                placeholder="Brief description..."
                                 style={{
                                     width: '100%',
-                                    padding: '12px 16px',
+                                    padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '6px',
-                                    fontSize: '14px',
+                                    borderRadius: '4px',
+                                    fontSize: '13px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
                                     color: 'var(--color-text-main)'
@@ -821,7 +927,7 @@ Summarize key takeaways and suggest next steps or further reading.
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                 Cover Image
                             </label>
                             <div style={{ display: 'flex', gap: '8px' }}>
@@ -829,13 +935,13 @@ Summarize key takeaways and suggest next steps or further reading.
                                     name="image"
                                     value={formData.image}
                                     onChange={handleChange}
-                                    placeholder="Image URL or upload from sidebar"
+                                    placeholder="Image URL"
                                     style={{
                                         flex: 1,
-                                        padding: '12px 16px',
+                                        padding: '10px 12px',
                                         border: '1px solid var(--color-border)',
-                                        borderRadius: '6px',
-                                        fontSize: '14px',
+                                        borderRadius: '4px',
+                                        fontSize: '13px',
                                         fontFamily: 'var(--font-sans)',
                                         background: 'var(--color-background)',
                                         color: 'var(--color-text-main)'
@@ -846,9 +952,9 @@ Summarize key takeaways and suggest next steps or further reading.
                                         src={formData.image}
                                         alt="cover"
                                         style={{
-                                            width: '44px',
-                                            height: '44px',
-                                            borderRadius: '6px',
+                                            width: '38px',
+                                            height: '38px',
+                                            borderRadius: '4px',
                                             objectFit: 'cover',
                                             border: '1px solid var(--color-border)'
                                         }}
@@ -859,39 +965,37 @@ Summarize key takeaways and suggest next steps or further reading.
                     </div>
                 </div>
 
-                {/* Markdown Toolbar */}
+                {/* Toolbar */}
                 <div style={{
-                    padding: '12px 24px',
+                    padding: '8px 20px',
                     borderBottom: '1px solid var(--color-border)',
                     display: 'flex',
-                    gap: '8px',
+                    gap: '6px',
                     alignItems: 'center',
                     background: 'var(--color-surface)'
                 }}>
-                    <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: '8px' }}>
-                        Format
-                    </span>
                     {[
-                        { label: 'B', action: () => insertMarkdown('**', '**'), title: 'Bold' },
+                        { label: 'B', action: () => insertMarkdown('**', '**'), title: 'Bold', style: { fontWeight: 'bold' } },
                         { label: 'I', action: () => insertMarkdown('_', '_'), title: 'Italic', style: { fontStyle: 'italic' } },
                         { label: 'H1', action: () => insertMarkdown('# ', ''), title: 'Heading 1' },
                         { label: 'H2', action: () => insertMarkdown('## ', ''), title: 'Heading 2' },
+                        { label: 'H3', action: () => insertMarkdown('### ', ''), title: 'Heading 3' },
                         { label: '"', action: () => insertMarkdown('> ', ''), title: 'Quote' },
-                        { label: '{ }', action: () => insertMarkdown('```\n', '\n```'), title: 'Code block' },
-                        { label: 'Link', action: () => insertMarkdown('[', '](url)'), title: 'Link' },
+                        { label: '•', action: () => insertMarkdown('- ', ''), title: 'List' },
+                        { label: '<>', action: () => insertMarkdown('```\n', '\n```'), title: 'Code' },
+                        { label: '🔗', action: () => insertMarkdown('[', '](url)'), title: 'Link' },
                     ].map((btn, i) => (
                         <button
                             key={i}
                             onClick={btn.action}
                             title={btn.title}
                             style={{
-                                padding: '6px 12px',
+                                padding: '5px 10px',
                                 background: 'var(--color-background)',
                                 border: '1px solid var(--color-border)',
-                                borderRadius: '4px',
+                                borderRadius: '3px',
                                 cursor: 'pointer',
-                                fontSize: '13px',
-                                fontWeight: '600',
+                                fontSize: '12px',
                                 color: 'var(--color-text-main)',
                                 ...btn.style
                             }}
@@ -899,59 +1003,56 @@ Summarize key takeaways and suggest next steps or further reading.
                             {btn.label}
                         </button>
                     ))}
-                    <div style={{ width: '1px', height: '20px', background: 'var(--color-border)', margin: '0 8px' }} />
+                    <div style={{ width: '1px', height: '16px', background: 'var(--color-border)', margin: '0 4px' }} />
                     <button
                         onClick={insertTemplate}
                         style={{
-                            padding: '6px 16px',
+                            padding: '5px 12px',
                             background: 'var(--color-background)',
                             border: '1px solid var(--color-border)',
-                            borderRadius: '4px',
+                            borderRadius: '3px',
                             cursor: 'pointer',
-                            fontSize: '13px',
-                            fontWeight: '600',
+                            fontSize: '12px',
                             color: 'var(--color-text-main)'
                         }}
                     >
-                        Load Template
+                        Template
                     </button>
                 </div>
 
-                {/* Split View Editor */}
+                {/* Editor */}
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                    {/* Editor */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--color-border)' }}>
                         <textarea
                             id="content-editor"
                             name="content"
                             value={formData.content}
                             onChange={handleChange}
-                            placeholder="Start writing in Markdown..."
+                            placeholder="Write your content in Markdown..."
                             style={{
                                 flex: 1,
-                                padding: '24px',
+                                padding: '20px',
                                 background: 'var(--color-background)',
                                 color: 'var(--color-text-main)',
                                 border: 'none',
                                 resize: 'none',
                                 fontFamily: '"Fira Code", "SF Mono", Monaco, monospace',
-                                fontSize: '15px',
-                                lineHeight: '1.7',
+                                fontSize: '14px',
+                                lineHeight: '1.6',
                                 outline: 'none'
                             }}
                         />
                     </div>
 
-                    {/* Preview */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--color-surface)' }}>
                         <div style={{
-                            padding: '12px 24px',
+                            padding: '8px 20px',
                             borderBottom: '1px solid var(--color-border)',
                             fontSize: '11px',
                             fontWeight: '600',
                             color: 'var(--color-text-muted)',
                             textTransform: 'uppercase',
-                            letterSpacing: '0.1em'
+                            letterSpacing: '0.05em'
                         }}>
                             Preview
                         </div>
@@ -959,17 +1060,35 @@ Summarize key takeaways and suggest next steps or further reading.
                             className="article-content"
                             style={{
                                 flex: 1,
-                                padding: '40px',
+                                padding: '30px',
                                 overflowY: 'auto',
                                 background: 'var(--color-background)'
                             }}
                             dangerouslySetInnerHTML={{
-                                __html: previewHtml || '<p style="color: var(--color-text-muted); font-style: italic;">Preview will appear here as you type...</p>'
+                                __html: previewHtml || '<p style="color: var(--color-text-muted); font-style: italic;">Preview will appear here...</p>'
                             }}
                         />
                     </div>
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function AdminPage() {
+    return (
+        <Suspense fallback={
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: 'var(--color-background)'
+            }}>
+                <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
+            </div>
+        }>
+            <AdminContent />
+        </Suspense>
     );
 }
