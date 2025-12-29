@@ -13,7 +13,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const postData = await getPostData(slug);
+  const decodedSlug = decodeURIComponent(slug);
+  const postData = await getPostData(decodedSlug);
 
   if (!postData) return { title: 'Post Not Found' };
 
@@ -58,7 +59,8 @@ function formatDate(dateString) {
 
 export default async function Post({ params }) {
   const { slug } = await params;
-  const postData = await getPostData(slug);
+  const decodedSlug = decodeURIComponent(slug);
+  const postData = await getPostData(decodedSlug);
   const allPosts = await getSortedPostsData();
 
   if (!postData) {
@@ -79,7 +81,7 @@ export default async function Post({ params }) {
 
   // Get related posts (same tag, excluding current post)
   const relatedPosts = allPosts
-    .filter(p => p.id !== slug && p.tag === postData.tag)
+    .filter(p => p.id !== decodedSlug && p.tag === postData.tag)
     .slice(0, 2);
 
   return (

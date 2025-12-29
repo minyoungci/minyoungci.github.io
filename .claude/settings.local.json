@@ -9,7 +9,9 @@
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
       "Bash(git checkout:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(git fetch:*)",
+      "Bash(node:*)"
     ]
   }
 }
