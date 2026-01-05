@@ -10,7 +10,7 @@ export default function Navbar() {
         <header className="header">
             <div className="header-inner container">
                 <Link href="/" className="logo">
-                    The Gradient
+                    Minyoungci
                 </Link>
 
                 <button
@@ -25,21 +25,21 @@ export default function Navbar() {
                     <Link href="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                         Articles
                     </Link>
-                    <Link href="/section/Classic" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                        Classic
-                    </Link>
                     <Link href="/section/Trend" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                         Trend
                     </Link>
-                    <Link href="/section/Guide" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                        Guide
+                    <Link href="/section/Research" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                        Research
+                    </Link>
+                    <Link href="/section/Series" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                        Series
+                    </Link>
+                    <Link href="/section/Life" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                        Life
                     </Link>
                     <Link href="/admin" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                         Write
                     </Link>
-                    <button className="btn-subscribe">
-                        Subscribe
-                    </button>
                 </nav>
             </div>
         </header>

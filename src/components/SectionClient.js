@@ -6,10 +6,10 @@ import FloatingSubscribe from '@/components/FloatingSubscribe';
 import { supabase } from '@/lib/supabase';
 
 const categoryDescriptions = {
-    'Classic': 'Timeless articles and foundational concepts in AI and machine learning.',
-    'Trend': 'The latest developments and emerging trends in artificial intelligence.',
-    'Guide': 'Practical tutorials and how-to guides for AI practitioners.',
-    'News': 'Breaking news and updates from the AI industry.'
+    'Trend': 'The latest developments and emerging trends in technology and AI.',
+    'Research': 'Deep dives into academic research, papers, and technical analysis.',
+    'Series': 'Multi-part articles and curated collections on specific topics.',
+    'Life': 'Personal reflections, experiences, and life lessons.'
 };
 
 export default function SectionClient({ category }) {

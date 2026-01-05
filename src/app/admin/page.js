@@ -47,6 +47,9 @@ function AdminContent() {
         image: ''
     });
 
+    // Category options
+    const categoryOptions = ['Trend', 'Research', 'Series', 'Life'];
+
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
 
@@ -897,10 +900,9 @@ Summarize key takeaways and suggest next steps or further reading.
                                     color: 'var(--color-text-main)'
                                 }}
                             >
-                                <option>Trend</option>
-                                <option>Classic</option>
-                                <option>Guide</option>
-                                <option>News</option>
+                                {categoryOptions.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
                             </select>
                         </div>
                     </div>

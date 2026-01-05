@@ -5,6 +5,8 @@ import FloatingSubscribe from '@/components/FloatingSubscribe';
 import EditButton from '@/components/EditButton';
 import ReadingProgress from '@/components/ReadingProgress';
 import CodeBlockEnhancer from '@/components/CodeBlockEnhancer';
+import TableOfContents from '@/components/TableOfContents';
+import TextHighlightShare from '@/components/TextHighlightShare';
 
 export async function generateStaticParams() {
   const posts = await getSortedPostsData();
@@ -102,7 +104,7 @@ export default async function Post({ params }) {
               "description": postData.summary,
               "image": postData.image,
               "datePublished": postData.date,
-              "author": { "@type": "Organization", "name": "The Gradient" }
+              "author": { "@type": "Person", "name": "Minyoungci" }
             })
           }}
         />
@@ -133,32 +135,39 @@ export default async function Post({ params }) {
           </div>
         )}
 
+        {/* Table of Contents */}
+        <TableOfContents contentHtml={postData.contentHtml} />
+
         {/* Article Content */}
         <div
           className="article-content"
           dangerouslySetInnerHTML={{ __html: postData.contentHtml }}
         />
 
+        {/* Text Highlight Share */}
+        <TextHighlightShare />
+
         {/* Author Box */}
         <div className="author-box">
           <div
             className="author-box-avatar"
             style={{
-              background: 'var(--color-surface)',
+              background: 'linear-gradient(135deg, #1a8917 0%, #2ecc71 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '32px',
-              color: 'var(--color-text-muted)'
+              fontSize: '28px',
+              fontWeight: '700',
+              color: 'white'
             }}
           >
-            ✍
+            M
           </div>
           <div className="author-box-content">
-            <h4 className="author-box-name">The Gradient Team</h4>
+            <h4 className="author-box-name">Minyoungci</h4>
             <p className="author-box-bio">
-              Exploring the frontiers of artificial intelligence and machine learning.
-              We publish in-depth articles, tutorials, and analysis on the latest developments in AI.
+              Exploring technology, research, and life. Writing about trends,
+              deep technical insights, and personal experiences.
             </p>
           </div>
         </div>

@@ -9,10 +9,10 @@ export async function generateStaticParams() {
         const tags = new Set(posts ? posts.map(post => post.tag) : []);
 
         // Always ensure default categories exist
-        tags.add('Classic');
         tags.add('Trend');
-        tags.add('Guide');
-        tags.add('News');
+        tags.add('Research');
+        tags.add('Series');
+        tags.add('Life');
 
         return Array.from(tags).map(tag => ({
             category: tag,
@@ -20,10 +20,10 @@ export async function generateStaticParams() {
     } catch (error) {
         console.error("Error generating section params:", error);
         return [
-            { category: 'Classic' },
             { category: 'Trend' },
-            { category: 'Guide' },
-            { category: 'News' }
+            { category: 'Research' },
+            { category: 'Series' },
+            { category: 'Life' }
         ];
     }
 }

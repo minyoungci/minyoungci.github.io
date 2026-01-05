@@ -5,17 +5,17 @@ import Footer from "@/components/Footer";
 export const metadata = {
   metadataBase: new URL('https://minyoungci.github.io'),
   title: {
-    default: "The Gradient | AI & Machine Learning Insights",
-    template: "%s | The Gradient"
+    default: "Minyoungci | Tech, Life & Beyond",
+    template: "%s | Minyoungci"
   },
-  description: "In-depth articles and analysis on artificial intelligence, machine learning, and the future of technology.",
-  keywords: ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "Tech Blog", "Research"],
-  authors: [{ name: "The Gradient Team" }],
+  description: "Personal blog exploring technology trends, research insights, life experiences, and curated series.",
+  keywords: ["Tech Blog", "Research", "Life", "Series", "Personal Blog", "Technology"],
+  authors: [{ name: "Minyoungci" }],
   openGraph: {
-    title: 'The Gradient',
-    description: 'In-depth articles and analysis on artificial intelligence and machine learning.',
+    title: 'Minyoungci',
+    description: 'Personal blog exploring technology trends, research, and life.',
     url: 'https://minyoungci.github.io',
-    siteName: 'The Gradient',
+    siteName: 'Minyoungci',
     images: [
       {
         url: '/favicon.ico',
@@ -28,8 +28,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Gradient',
-    description: 'In-depth AI & ML insights.',
+    title: 'Minyoungci',
+    description: 'Tech, Life & Beyond',
     images: ['/favicon.ico'],
   },
   robots: {

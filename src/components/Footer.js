@@ -5,7 +5,7 @@ export default function Footer() {
         <footer className="footer">
             <div className="footer-inner container">
                 <Link href="/" className="footer-logo">
-                    The Gradient
+                    Minyoungci
                 </Link>
 
                 {/* Social Links */}
@@ -58,7 +58,7 @@ export default function Footer() {
                 </div>
 
                 <div className="footer-text">
-                    &copy; {new Date().getFullYear()} The Gradient. All rights reserved.
+                    &copy; {new Date().getFullYear()} Minyoungci. All rights reserved.
                 </div>
             </div>
         </footer>
