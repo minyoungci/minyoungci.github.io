@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function Brief({ title, tag, summary, image, slug, date }) {
+export default function Brief({ title, tag, summary, image, slug, date, featured = false }) {
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const d = new Date(dateString);
@@ -13,62 +13,75 @@ export default function Brief({ title, tag, summary, image, slug, date }) {
 
     const readingTime = Math.max(3, Math.ceil((summary?.length || 0) / 100));
 
-    return (
-        <div className="card-wrapper">
-            <article className="card">
-                <Link href={`/${slug}/`} className="card-link" aria-label={`Read: ${title}`} />
-
-                {/* Share buttons */}
-                <div className="card-share">
-                    <button
-                        className="share-btn"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(window.location.origin + '/' + slug + '/')}`, '_blank');
-                        }}
-                        title="Share on Twitter"
-                    >
-                        𝕏
-                    </button>
-                    <button
-                        className="share-btn"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(window.location.origin + '/' + slug + '/');
-                        }}
-                        title="Copy link"
-                    >
-                        🔗
-                    </button>
-                </div>
-
-                {image && (
-                    <div className="card-image-wrapper">
-                        <img
-                            src={image}
-                            alt={title}
-                            className="card-image"
-                            loading="lazy"
-                            decoding="async"
-                            width={400}
-                            height={225}
-                        />
+    // Featured Post Layout (Large Hero Style)
+    if (featured) {
+        return (
+            <article className="card-featured">
+                <Link href={`/${slug}/`} className="card-featured-link">
+                    <div className="card-featured-image-wrapper">
+                        {image ? (
+                            <img
+                                src={image}
+                                alt={title}
+                                className="card-featured-image"
+                                loading="eager"
+                                decoding="async"
+                            />
+                        ) : (
+                            <div className="card-featured-placeholder" />
+                        )}
                     </div>
-                )}
+                    <div className="card-featured-content">
+                        {tag && <span className="card-tag">{tag}</span>}
+                        <h2 className="card-featured-title">{title}</h2>
+                        {summary && <p className="card-featured-summary">{summary}</p>}
+                        <div className="card-author">
+                            <div className="card-author-avatar">M</div>
+                            <div className="card-author-info">
+                                <span className="card-author-name">Minyoungci</span>
+                                <span className="card-author-meta">
+                                    {formatDate(date)} · {readingTime} min read
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </Link>
+            </article>
+        );
+    }
 
-                <div className="card-content">
-                    {tag && <span className="card-tag">{tag}</span>}
-                    <h3 className="card-title">{title}</h3>
-                    {summary && <p className="card-summary">{summary}</p>}
-                    <div className="card-meta">
-                        {date && <span>{formatDate(date)}</span>}
-                        {date && <span>•</span>}
+    // List Post Layout (Horizontal Style)
+    return (
+        <article className="card-list">
+            <Link href={`/${slug}/`} className="card-list-link">
+                <div className="card-list-content">
+                    <div className="card-list-header">
+                        <div className="card-author-small">
+                            <div className="card-author-avatar-small">M</div>
+                            <span className="card-author-name-small">Minyoungci</span>
+                        </div>
+                        {tag && <span className="card-tag-small">{tag}</span>}
+                    </div>
+                    <h3 className="card-list-title">{title}</h3>
+                    {summary && <p className="card-list-summary">{summary}</p>}
+                    <div className="card-list-meta">
+                        <span>{formatDate(date)}</span>
+                        <span>·</span>
                         <span>{readingTime} min read</span>
                     </div>
                 </div>
-            </article>
-        </div>
+                {image && (
+                    <div className="card-list-image-wrapper">
+                        <img
+                            src={image}
+                            alt={title}
+                            className="card-list-image"
+                            loading="lazy"
+                            decoding="async"
+                        />
+                    </div>
+                )}
+            </Link>
+        </article>
     );
 }

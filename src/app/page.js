@@ -27,6 +27,9 @@ export default function Home() {
     fetchPosts();
   }, []);
 
+  const featuredPost = allPostsData[0];
+  const remainingPosts = allPostsData.slice(1);
+
   return (
     <>
       <main className="container posts-section">
@@ -36,20 +39,39 @@ export default function Home() {
           </div>
         ) : allPostsData.length > 0 ? (
           <section className="animate-fade-in">
-            <h2 className="section-title">Latest Articles</h2>
-            <div className="posts-grid">
-              {allPostsData.map((post) => (
+            {/* Featured Post */}
+            {featuredPost && (
+              <div className="featured-post">
                 <Brief
-                  key={post.id}
-                  title={post.title}
-                  tag={post.tag}
-                  summary={post.summary}
-                  image={post.image}
-                  slug={post.id}
-                  date={post.date}
+                  key={featuredPost.id}
+                  title={featuredPost.title}
+                  tag={featuredPost.tag}
+                  summary={featuredPost.summary}
+                  image={featuredPost.image}
+                  slug={featuredPost.id}
+                  date={featuredPost.date}
+                  featured={true}
                 />
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Post List */}
+            {remainingPosts.length > 0 && (
+              <div className="posts-list">
+                {remainingPosts.map((post) => (
+                  <Brief
+                    key={post.id}
+                    title={post.title}
+                    tag={post.tag}
+                    summary={post.summary}
+                    image={post.image}
+                    slug={post.id}
+                    date={post.date}
+                    featured={false}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         ) : (
           <div className="empty-state">
