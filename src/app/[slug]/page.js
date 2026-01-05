@@ -25,13 +25,17 @@ export async function generateMetadata({ params }) {
 
   return {
     title: postData.title,
-    description: postData.summary || `Read about ${postData.title} on The Gradient.`,
+    description: postData.summary || `${postData.title}에 대해 읽어보세요.`,
+    alternates: {
+      canonical: `https://minyoungci.github.io/${decodedSlug}/`
+    },
     openGraph: {
       title: postData.title,
       description: postData.summary,
       type: 'article',
       publishedTime: postData.date,
-      authors: ['The Gradient'],
+      authors: ['Minyoungci'],
+      url: `https://minyoungci.github.io/${decodedSlug}/`,
       images: postData.image ? [{ url: postData.image }] : [],
     },
     twitter: {
@@ -93,7 +97,7 @@ export default async function Post({ params }) {
     <>
       <ReadingProgress />
       <article className="article animate-fade-in">
-        {/* SEO Structured Data */}
+        {/* SEO Structured Data - BlogPosting */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -104,7 +108,51 @@ export default async function Post({ params }) {
               "description": postData.summary,
               "image": postData.image,
               "datePublished": postData.date,
-              "author": { "@type": "Person", "name": "Minyoungci" }
+              "dateModified": postData.date,
+              "wordCount": postData.content ? postData.content.split(/\s+/).length : 0,
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `https://minyoungci.github.io/${decodedSlug}/`
+              },
+              "author": {
+                "@type": "Person",
+                "name": "Minyoungci",
+                "url": "https://minyoungci.github.io"
+              },
+              "publisher": {
+                "@type": "Person",
+                "name": "Minyoungci",
+                "url": "https://minyoungci.github.io"
+              }
+            })
+          }}
+        />
+        {/* SEO Structured Data - BreadcrumbList */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://minyoungci.github.io"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": postData.tag || "Article",
+                  "item": `https://minyoungci.github.io/section/${postData.tag || 'Trend'}/`
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": postData.title
+                }
+              ]
             })
           }}
         />
@@ -130,7 +178,11 @@ export default async function Post({ params }) {
             <img
               src={postData.image}
               alt={postData.title}
-              style={{ width: '100%', display: 'block' }}
+              loading="eager"
+              decoding="async"
+              width={800}
+              height={450}
+              style={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '16/9', objectFit: 'cover' }}
             />
           </div>
         )}

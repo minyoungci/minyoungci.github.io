@@ -8,12 +8,15 @@ export const metadata = {
     default: "Minyoungci | Tech, Life & Beyond",
     template: "%s | Minyoungci"
   },
-  description: "Personal blog exploring technology trends, research insights, life experiences, and curated series.",
-  keywords: ["Tech Blog", "Research", "Life", "Series", "Personal Blog", "Technology"],
+  description: "기술 트렌드, 연구, 일상을 탐구하는 개인 블로그입니다.",
+  keywords: ["Tech Blog", "Research", "Life", "Series", "Personal Blog", "Technology", "AI", "기술 블로그"],
   authors: [{ name: "Minyoungci" }],
+  alternates: {
+    canonical: 'https://minyoungci.github.io'
+  },
   openGraph: {
     title: 'Minyoungci',
-    description: 'Personal blog exploring technology trends, research, and life.',
+    description: '기술 트렌드, 연구, 일상을 탐구하는 개인 블로그',
     url: 'https://minyoungci.github.io',
     siteName: 'Minyoungci',
     images: [
@@ -23,7 +26,7 @@ export const metadata = {
         height: 630,
       },
     ],
-    locale: 'en_US',
+    locale: 'ko_KR',
     type: 'website',
   },
   twitter: {
@@ -35,12 +38,43 @@ export const metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    }
   }
 };
 
 export default function RootLayout({ children }) {
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Minyoungci",
+    "url": "https://minyoungci.github.io",
+    "description": "기술 트렌드, 연구, 일상을 탐구하는 개인 블로그",
+    "author": {
+      "@type": "Person",
+      "name": "Minyoungci",
+      "url": "https://minyoungci.github.io"
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://minyoungci.github.io/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="ko" suppressHydrationWarning={true}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+      </head>
       <body suppressHydrationWarning={true}>
         <Navbar />
         <main style={{ minHeight: 'calc(100vh - 300px)' }}>

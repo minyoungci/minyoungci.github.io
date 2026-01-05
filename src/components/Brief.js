@@ -50,6 +50,10 @@ export default function Brief({ title, tag, summary, image, slug, date }) {
                             src={image}
                             alt={title}
                             className="card-image"
+                            loading="lazy"
+                            decoding="async"
+                            width={400}
+                            height={225}
                         />
                     </div>
                 )}
