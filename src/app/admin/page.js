@@ -156,7 +156,7 @@ function AdminContent() {
     // Authentication
     const handleLogin = (e) => {
         e.preventDefault();
-        if (password === '1234') {
+        if (password === 'rlaalsdud12') {
             setIsAuthenticated(true);
         } else {
             alert('Incorrect password');
