@@ -11,6 +11,10 @@ export const metadata = {
   description: "기술 트렌드, 연구, 일상을 탐구하는 개인 블로그입니다.",
   keywords: ["Tech Blog", "Research", "Life", "Series", "Personal Blog", "Technology", "AI", "기술 블로그"],
   authors: [{ name: "Minyoungci" }],
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
   alternates: {
     canonical: 'https://minyoungci.github.io'
   },
@@ -21,19 +25,19 @@ export const metadata = {
     siteName: 'Minyoungci',
     images: [
       {
-        url: '/favicon.ico',
-        width: 1200,
-        height: 630,
+        url: '/icon.svg',
+        width: 100,
+        height: 100,
       },
     ],
     locale: 'ko_KR',
     type: 'website',
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'Minyoungci',
     description: 'Tech, Life & Beyond',
-    images: ['/favicon.ico'],
+    images: ['/icon.svg'],
   },
   robots: {
     index: true,
