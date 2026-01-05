@@ -36,7 +36,7 @@ export default function Brief({ title, tag, summary, image, slug, date, featured
                         <h2 className="card-featured-title">{title}</h2>
                         {summary && <p className="card-featured-summary">{summary}</p>}
                         <div className="card-author">
-                            <div className="card-author-avatar">M</div>
+                            <img src="/icon.svg" alt="Minyoungci" className="card-author-avatar" />
                             <div className="card-author-info">
                                 <span className="card-author-name">Minyoungci</span>
                                 <span className="card-author-meta">
@@ -89,7 +89,7 @@ export default function Brief({ title, tag, summary, image, slug, date, featured
                 <div className="card-list-content">
                     <div className="card-list-header">
                         <div className="card-author-small">
-                            <div className="card-author-avatar-small">M</div>
+                            <img src="/icon.svg" alt="Minyoungci" className="card-author-avatar-small" />
                             <span className="card-author-name-small">Minyoungci</span>
                         </div>
                         {tag && <span className="card-tag-small">{tag}</span>}

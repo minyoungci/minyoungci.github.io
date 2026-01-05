@@ -400,13 +400,8 @@ img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #2ecc71 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 16px;
+  object-fit: cover;
+  background: var(--color-bg-secondary);
 }
 
 .card-author-info {
@@ -484,13 +479,8 @@ img {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #2ecc71 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 11px;
+  object-fit: cover;
+  background: var(--color-bg-secondary);
 }
 
 .card-author-name-small {
