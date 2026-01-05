@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Brief from '@/components/Brief';
 import FloatingSubscribe from '@/components/FloatingSubscribe';
 import { supabase } from '@/lib/supabase';
@@ -30,6 +31,13 @@ export default function Home() {
   const featuredPost = allPostsData[0];
   const remainingPosts = allPostsData.slice(1);
 
+  // Group posts by category
+  const categories = ['Trend', 'Research', 'Series', 'Life'];
+  const postsByCategory = categories.reduce((acc, category) => {
+    acc[category] = remainingPosts.filter(post => post.tag === category);
+    return acc;
+  }, {});
+
   return (
     <>
       <main className="container posts-section">
@@ -55,23 +63,37 @@ export default function Home() {
               </div>
             )}
 
-            {/* Post List */}
-            {remainingPosts.length > 0 && (
-              <div className="posts-list">
-                {remainingPosts.map((post) => (
-                  <Brief
-                    key={post.id}
-                    title={post.title}
-                    tag={post.tag}
-                    summary={post.summary}
-                    image={post.image}
-                    slug={post.id}
-                    date={post.date}
-                    featured={false}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Posts by Category */}
+            {categories.map(category => {
+              const posts = postsByCategory[category];
+              if (!posts || posts.length === 0) return null;
+
+              return (
+                <div key={category} className="category-section">
+                  <div className="category-header">
+                    <h2 className="category-title">{category}</h2>
+                    <Link href={`/section/${category}/`} className="category-link">
+                      View all →
+                    </Link>
+                  </div>
+                  <div className="posts-grid-3">
+                    {posts.slice(0, 6).map((post) => (
+                      <Brief
+                        key={post.id}
+                        title={post.title}
+                        tag={post.tag}
+                        summary={post.summary}
+                        image={post.image}
+                        slug={post.id}
+                        date={post.date}
+                        featured={false}
+                        grid={true}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </section>
         ) : (
           <div className="empty-state">

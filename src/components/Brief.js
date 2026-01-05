@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function Brief({ title, tag, summary, image, slug, date, featured = false }) {
+export default function Brief({ title, tag, summary, image, slug, date, featured = false, grid = false }) {
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const d = new Date(dateString);
@@ -50,7 +50,39 @@ export default function Brief({ title, tag, summary, image, slug, date, featured
         );
     }
 
-    // List Post Layout (Horizontal Style)
+    // Grid Card Layout (3-column)
+    if (grid) {
+        return (
+            <article className="card-grid">
+                <Link href={`/${slug}/`} className="card-grid-link">
+                    <div className="card-grid-image-wrapper">
+                        {image ? (
+                            <img
+                                src={image}
+                                alt={title}
+                                className="card-grid-image"
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        ) : (
+                            <div className="card-grid-placeholder" />
+                        )}
+                    </div>
+                    <div className="card-grid-content">
+                        <h3 className="card-grid-title">{title}</h3>
+                        {summary && <p className="card-grid-summary">{summary}</p>}
+                        <div className="card-grid-meta">
+                            <span>{formatDate(date)}</span>
+                            <span>·</span>
+                            <span>{readingTime} min</span>
+                        </div>
+                    </div>
+                </Link>
+            </article>
+        );
+    }
+
+    // List Post Layout (Horizontal Style) - for section pages
     return (
         <article className="card-list">
             <Link href={`/${slug}/`} className="card-list-link">
