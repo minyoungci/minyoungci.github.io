@@ -67,7 +67,7 @@ export default function SectionClient({ category }) {
 
                 {loading ? (
                     <div className="loading-state">
-                        Loading articles...
+                        글을 불러오는 중...
                     </div>
                 ) : filteredPosts.length > 0 ? (
                     <div className="posts-grid animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -85,8 +85,8 @@ export default function SectionClient({ category }) {
                     </div>
                 ) : (
                     <div className="empty-state animate-fade-in">
-                        <div className="empty-state-icon">📂</div>
-                        <p className="empty-state-text">No articles in this category yet.</p>
+                        <div className="empty-state-icon">📝</div>
+                        <p className="empty-state-text">아직 이 카테고리에 글이 없습니다.</p>
                     </div>
                 )}
             </main>

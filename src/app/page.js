@@ -43,7 +43,7 @@ export default function Home() {
       <main className="container posts-section">
         {loading ? (
           <div className="loading-state">
-            Loading articles...
+            글을 불러오는 중...
           </div>
         ) : allPostsData.length > 0 ? (
           <section className="animate-fade-in">
@@ -73,7 +73,7 @@ export default function Home() {
                   <div className="category-header">
                     <h2 className="category-title">{category}</h2>
                     <Link href={`/section/${category}/`} className="category-link">
-                      View all →
+                      모두 보기 →
                     </Link>
                   </div>
                   <div className="posts-grid-3">
@@ -98,7 +98,7 @@ export default function Home() {
         ) : (
           <div className="empty-state">
             <div className="empty-state-icon">📝</div>
-            <p className="empty-state-text">No articles published yet.</p>
+            <p className="empty-state-text">아직 작성된 글이 없습니다.</p>
           </div>
         )}
       </main>
