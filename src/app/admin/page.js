@@ -353,19 +353,48 @@ Summarize key takeaways and suggest next steps or further reading.
 
         try {
             if (isEditMode) {
-                // Update existing post
-                const { error } = await supabase
-                    .from('posts')
-                    .update({
-                        title: formData.title.trim(),
-                        tag: formData.tag,
-                        summary: formData.summary?.trim() || '',
-                        content: formData.content || '',
-                        image: formData.image || null,
-                    })
-                    .eq('id', editingPostId);
+                const newSlug = formData.slug.trim();
+                const slugChanged = newSlug !== editingPostId;
 
-                if (error) throw error;
+                if (slugChanged) {
+                    // Slug changed: delete old post and create new one
+                    const { error: deleteError } = await supabase
+                        .from('posts')
+                        .delete()
+                        .eq('id', editingPostId);
+
+                    if (deleteError) throw deleteError;
+
+                    const { error: insertError } = await supabase
+                        .from('posts')
+                        .insert([{
+                            id: newSlug,
+                            title: formData.title.trim(),
+                            tag: formData.tag,
+                            summary: formData.summary?.trim() || '',
+                            content: formData.content || '',
+                            image: formData.image || null,
+                            date: new Date().toISOString()
+                        }]);
+
+                    if (insertError) throw insertError;
+
+                    setEditingPostId(newSlug);
+                } else {
+                    // Same slug: just update
+                    const { error } = await supabase
+                        .from('posts')
+                        .update({
+                            title: formData.title.trim(),
+                            tag: formData.tag,
+                            summary: formData.summary?.trim() || '',
+                            content: formData.content || '',
+                            image: formData.image || null,
+                        })
+                        .eq('id', editingPostId);
+
+                    if (error) throw error;
+                }
 
                 setStatus('success');
                 setMessage('Updated successfully!');
@@ -868,7 +897,6 @@ Summarize key takeaways and suggest next steps or further reading.
                                 value={formData.slug}
                                 onChange={handleChange}
                                 placeholder="url-slug"
-                                disabled={isEditMode}
                                 style={{
                                     width: '100%',
                                     padding: '10px 12px',
@@ -876,7 +904,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     borderRadius: '4px',
                                     fontSize: '13px',
                                     fontFamily: 'var(--font-sans)',
-                                    background: isEditMode ? 'var(--color-surface)' : 'var(--color-background)',
+                                    background: 'var(--color-background)',
                                     color: 'var(--color-text-main)'
                                 }}
                             />
