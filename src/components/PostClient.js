@@ -112,6 +112,7 @@ export default function PostClient({ slug }) {
   return (
     <>
       <ReadingProgress />
+      <div className="article-layout">
       <article className="article animate-fade-in">
         {/* SEO Structured Data - BlogPosting */}
         <script
@@ -203,9 +204,6 @@ export default function PostClient({ slug }) {
           </div>
         )}
 
-        {/* Table of Contents */}
-        <TableOfContents contentHtml={postData.contentHtml} />
-
         {/* Article Content */}
         <div
           className="article-content"
@@ -265,6 +263,12 @@ export default function PostClient({ slug }) {
           <RelatedPosts posts={relatedPosts} />
         )}
       </article>
+
+      {/* Sidebar with TOC */}
+      <aside className="article-sidebar">
+        <TableOfContents contentHtml={postData.contentHtml} />
+      </aside>
+      </div>
 
       <FloatingSubscribe />
       <EditButton postId={slug} />
