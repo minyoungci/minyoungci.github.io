@@ -14,7 +14,6 @@ import TableOfContents from '@/components/TableOfContents';
 import TextHighlightShare from '@/components/TextHighlightShare';
 import ShareButtons from '@/components/ShareButtons';
 import ImageLightbox from '@/components/ImageLightbox';
-import GiscusComments from '@/components/GiscusComments';
 import ViewCount from '@/components/ViewCount';
 
 // Calculate reading time
@@ -273,8 +272,6 @@ export default function PostClient({ slug }) {
           <RelatedPosts posts={relatedPosts} />
         )}
 
-        {/* Giscus Comments */}
-        <GiscusComments />
       </article>
 
       {/* Sidebar with TOC */}
