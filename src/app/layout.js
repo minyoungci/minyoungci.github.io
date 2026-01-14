@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import NetworkBackground from "@/components/NetworkBackground";
 
 export const metadata = {
   metadataBase: new URL('https://minyoungci.github.io'),
@@ -96,6 +97,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body suppressHydrationWarning={true}>
+        <NetworkBackground />
         <Navbar />
         <main style={{ minHeight: 'calc(100vh - 300px)' }}>
           {children}

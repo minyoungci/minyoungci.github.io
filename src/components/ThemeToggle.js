@@ -22,55 +22,90 @@ export default function ThemeToggle() {
         document.documentElement.setAttribute('data-theme', newTheme);
     };
 
-    if (!mounted) {
-        return (
-            <button
-                className="theme-toggle"
-                aria-label="Toggle theme"
-                style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: '8px',
-                    cursor: 'pointer',
-                    fontSize: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    transition: 'background 0.2s ease',
-                    color: 'var(--color-text-muted)',
-                }}
-            >
-                <span style={{ opacity: 0 }}>☀️</span>
-            </button>
-        );
-    }
+    const isDark = theme === 'dark';
 
     return (
-        <button
-            onClick={toggleTheme}
-            className="theme-toggle"
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            style={{
-                background: 'none',
-                border: 'none',
-                padding: '8px',
-                cursor: 'pointer',
-                fontSize: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                transition: 'all 0.2s ease',
-                color: 'var(--color-text-muted)',
-            }}
-        >
-            {theme === 'light' ? '🌙' : '☀️'}
-        </button>
+        <>
+            <button
+                onClick={toggleTheme}
+                className="theme-toggle-btn"
+                aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                style={{ opacity: mounted ? 1 : 0 }}
+            >
+                <span className="toggle-track">
+                    <span className={`toggle-thumb ${isDark ? 'dark' : ''}`}>
+                        {isDark ? (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                            </svg>
+                        ) : (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+                            </svg>
+                        )}
+                    </span>
+                </span>
+            </button>
+            <style jsx>{`
+                .theme-toggle-btn {
+                    background: none;
+                    border: none;
+                    padding: 4px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: opacity 0.3s ease;
+                }
+
+                .toggle-track {
+                    width: 48px;
+                    height: 26px;
+                    background: var(--color-border);
+                    border-radius: 13px;
+                    position: relative;
+                    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                [data-theme="dark"] .toggle-track {
+                    background: #374151;
+                }
+
+                .toggle-thumb {
+                    position: absolute;
+                    top: 3px;
+                    left: 3px;
+                    width: 20px;
+                    height: 20px;
+                    background: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #f59e0b;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .toggle-thumb.dark {
+                    left: 25px;
+                    color: #6366f1;
+                    background: #1e1e2e;
+                }
+
+                .toggle-thumb svg {
+                    transition: transform 0.3s ease;
+                }
+
+                .theme-toggle-btn:hover .toggle-thumb svg {
+                    transform: rotate(15deg);
+                }
+
+                .theme-toggle-btn:active .toggle-track {
+                    transform: scale(0.95);
+                }
+            `}</style>
+        </>
     );
 }
