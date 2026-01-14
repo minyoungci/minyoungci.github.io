@@ -16,7 +16,10 @@ export const metadata = {
     apple: '/icon.svg',
   },
   alternates: {
-    canonical: 'https://minyoungci.github.io'
+    canonical: 'https://minyoungci.github.io',
+    types: {
+      'application/rss+xml': '/feed.xml',
+    },
   },
   openGraph: {
     title: 'Minyoungci',
@@ -71,9 +74,22 @@ export default function RootLayout({ children }) {
     }
   };
 
+  const themeInitScript = `
+    (function() {
+      try {
+        var theme = localStorage.getItem('theme');
+        if (!theme) {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  `;
+
   return (
     <html lang="ko" suppressHydrationWarning={true}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}

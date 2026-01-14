@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/generate-rss.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -11,11 +12,19 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.87.1",
     "gray-matter": "^4.0.3",
+    "katex": "^0.16.27",
     "next": "16.0.10",
+    "prismjs": "^1.30.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "rehype-katex": "^7.0.1",
+    "rehype-stringify": "^10.0.1",
     "remark": "^15.0.1",
-    "remark-html": "^16.0.1"
+    "remark-html": "^16.0.1",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "eslint": "^9",

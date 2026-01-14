@@ -2,11 +2,17 @@
 
 export const dynamic = 'force-static';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { remark } from 'remark';
 import html from 'remark-html';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import rehypeStringify from 'rehype-stringify';
+import remarkRehype from 'remark-rehype';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
 
 function AdminContent() {
     const searchParams = useSearchParams();
@@ -23,11 +29,14 @@ function AdminContent() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingPostId, setEditingPostId] = useState(null);
+    const textareaRef = useRef(null);
 
     // Image Manager State
     const [images, setImages] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
     const fileInputRef = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     // Post Manager State
     const [activeTab, setActiveTab] = useState('posts');
@@ -37,11 +46,16 @@ function AdminContent() {
     // Two-step Delete State
     const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+    // Auto-save State
+    const [lastSaved, setLastSaved] = useState(null);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
     // Form States
     const [formData, setFormData] = useState({
         title: '',
         slug: '',
         tag: 'Trend',
+        series: '',
         summary: '',
         content: '',
         image: ''
@@ -52,6 +66,56 @@ function AdminContent() {
 
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
+
+    // Word count
+    const wordCount = formData.content.trim() ? formData.content.trim().split(/\s+/).length : 0;
+    const charCount = formData.content.length;
+
+    // ========== Auto-save to localStorage ==========
+    const AUTOSAVE_KEY = 'admin_autosave';
+
+    // Load from localStorage on mount
+    useEffect(() => {
+        if (mounted && isAuthenticated && !isEditMode) {
+            const saved = localStorage.getItem(AUTOSAVE_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.content || parsed.title) {
+                        const shouldRestore = confirm('작성 중이던 글이 있습니다. 복구할까요?');
+                        if (shouldRestore) {
+                            setFormData(parsed);
+                        } else {
+                            localStorage.removeItem(AUTOSAVE_KEY);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to parse autosave:', e);
+                }
+            }
+        }
+    }, [mounted, isAuthenticated, isEditMode]);
+
+    // Auto-save every 5 seconds when there are changes
+    useEffect(() => {
+        if (!isAuthenticated || isEditMode) return;
+
+        const timer = setTimeout(() => {
+            if (formData.title || formData.content) {
+                localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(formData));
+                setLastSaved(new Date());
+                setHasUnsavedChanges(false);
+            }
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [formData, isAuthenticated, isEditMode]);
+
+    // Clear autosave when published
+    const clearAutosave = () => {
+        localStorage.removeItem(AUTOSAVE_KEY);
+        setLastSaved(null);
+    };
 
     // Fetch Posts
     const fetchPostsList = async () => {
@@ -82,6 +146,7 @@ function AdminContent() {
                 title: data.title || '',
                 slug: data.id || '',
                 tag: data.tag || 'Trend',
+                series: data.series || '',
                 summary: data.summary || '',
                 content: data.content || '',
                 image: data.image || ''
@@ -104,6 +169,7 @@ function AdminContent() {
             title: '',
             slug: '',
             tag: 'Trend',
+            series: '',
             summary: '',
             content: '',
             image: ''
@@ -185,35 +251,103 @@ function AdminContent() {
         }
     };
 
-    const handleImageUpload = async (e) => {
+    // Multi-image upload
+    const handleImageUpload = async (files) => {
+        if (!files || files.length === 0) return;
+
+        setUploading(true);
+        setUploadProgress({ current: 0, total: files.length });
+        const uploadedUrls = [];
+
         try {
-            const file = e.target.files[0];
-            if (!file) return;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-            setUploading(true);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                setUploadProgress({ current: i + 1, total: files.length });
 
-            const { error: uploadError } = await supabase.storage
-                .from('images')
-                .upload(fileName, file);
+                const { error: uploadError } = await supabase.storage
+                    .from('images')
+                    .upload(fileName, file);
 
-            if (uploadError) throw uploadError;
+                if (uploadError) throw uploadError;
 
-            await fetchImages();
-            setMessage('Image uploaded!');
-
-            const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
-            if (!formData.image) {
-                setFormData(prev => ({ ...prev, image: publicUrl }));
+                const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
+                uploadedUrls.push(publicUrl);
             }
 
+            await fetchImages();
+            setMessage(`${files.length}개 이미지 업로드 완료!`);
+
+            // Set first image as cover if no cover set
+            if (!formData.image && uploadedUrls.length > 0) {
+                setFormData(prev => ({ ...prev, image: uploadedUrls[0] }));
+            }
+
+            return uploadedUrls;
         } catch (error) {
             console.error('Upload Error:', error);
             setMessage('Error uploading: ' + error.message);
+            return [];
         } finally {
             setUploading(false);
+            setUploadProgress({ current: 0, total: 0 });
             if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleFileInputChange = (e) => {
+        const files = Array.from(e.target.files);
+        handleImageUpload(files);
+    };
+
+    // Drag and Drop handlers
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        if (files.length > 0) {
+            const urls = await handleImageUpload(files);
+            // Insert all dropped images at cursor position
+            if (urls.length > 0) {
+                const markdown = urls.map(url => `![Image](${url})`).join('\n');
+                insertAtCursor(markdown);
+            }
+        }
+    };
+
+    // Clipboard paste handler for images
+    const handlePaste = async (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        const imageFiles = [];
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const file = item.getAsFile();
+                if (file) imageFiles.push(file);
+            }
+        }
+
+        if (imageFiles.length > 0) {
+            e.preventDefault();
+            const urls = await handleImageUpload(imageFiles);
+            if (urls.length > 0) {
+                const markdown = urls.map(url => `![Image](${url})`).join('\n');
+                insertAtCursor(markdown);
+            }
         }
     };
 
@@ -240,9 +374,38 @@ function AdminContent() {
         }
     };
 
+    // Insert at cursor position
+    const insertAtCursor = useCallback((text) => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const content = formData.content;
+        const before = content.substring(0, start);
+        const after = content.substring(end);
+
+        // Add newlines if needed
+        const needNewlineBefore = before.length > 0 && !before.endsWith('\n');
+        const needNewlineAfter = after.length > 0 && !after.startsWith('\n');
+
+        const insertText = (needNewlineBefore ? '\n' : '') + text + (needNewlineAfter ? '\n' : '');
+        const newContent = before + insertText + after;
+
+        setFormData(prev => ({ ...prev, content: newContent }));
+        setHasUnsavedChanges(true);
+
+        // Set cursor position after inserted text
+        setTimeout(() => {
+            const newPos = start + insertText.length;
+            textarea.focus();
+            textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+    }, [formData.content]);
+
     // Toolbar & Editor Logic
     const insertMarkdown = (prefix, suffix) => {
-        const textarea = document.getElementById('content-editor');
+        const textarea = textareaRef.current;
         if (!textarea) return;
 
         const start = textarea.selectionStart;
@@ -254,6 +417,7 @@ function AdminContent() {
 
         const newContent = before + prefix + selection + suffix + after;
         setFormData(prev => ({ ...prev, content: newContent }));
+        setHasUnsavedChanges(true);
 
         setTimeout(() => {
             textarea.focus();
@@ -287,23 +451,45 @@ Develop the second insight with examples or data.
 Summarize key takeaways and suggest next steps or further reading.
 `;
         setFormData(prev => ({ ...prev, content: template }));
+        setHasUnsavedChanges(true);
     };
 
     const insertImageToContent = (url) => {
-        const markdown = `\n![Image](${url})\n`;
-        setFormData(prev => ({
-            ...prev,
-            content: prev.content + markdown
-        }));
+        insertAtCursor(`![Image](${url})`);
     };
 
     const setAsCover = (url) => {
         setFormData(prev => ({ ...prev, image: url }));
+        setHasUnsavedChanges(true);
+    };
+
+    // Keyboard shortcuts
+    const handleKeyDown = (e) => {
+        if (!e.ctrlKey && !e.metaKey) return;
+
+        const shortcuts = {
+            'b': () => insertMarkdown('**', '**'),      // Bold
+            'i': () => insertMarkdown('_', '_'),         // Italic
+            'k': () => insertMarkdown('[', '](url)'),    // Link
+            'h': () => insertMarkdown('## ', ''),        // Heading
+            '/': () => insertMarkdown('```\n', '\n```'), // Code block
+            's': (e) => {                                 // Save
+                e.preventDefault();
+                handleSubmit(e);
+            }
+        };
+
+        const key = e.key.toLowerCase();
+        if (shortcuts[key]) {
+            e.preventDefault();
+            shortcuts[key](e);
+        }
     };
 
     // Editor Logic
     const handleChange = (e) => {
         const { name, value } = e.target;
+        setHasUnsavedChanges(true);
 
         if (name === 'title' && !isEditMode && !formData.slug) {
             const generatedSlug = value.toLowerCase()
@@ -315,6 +501,7 @@ Summarize key takeaways and suggest next steps or further reading.
         }
     };
 
+    // Preview with LaTeX and code highlighting
     useEffect(() => {
         const timer = setTimeout(async () => {
             if (!formData.content) {
@@ -322,17 +509,62 @@ Summarize key takeaways and suggest next steps or further reading.
                 return;
             }
             try {
-                const processedContent = await remark()
-                    .use(html)
+                const result = await unified()
+                    .use(remarkParse)
+                    .use(remarkMath)
+                    .use(remarkRehype)
+                    .use(rehypeKatex)
+                    .use(rehypeStringify)
                     .process(formData.content);
-                const contentHtml = processedContent.toString();
+
+                let contentHtml = result.toString();
+
+                // Add syntax highlighting classes for code blocks
+                contentHtml = contentHtml.replace(
+                    /<pre><code class="language-(\w+)">/g,
+                    '<pre class="language-$1"><code class="language-$1">'
+                );
+
                 setPreviewHtml(contentHtml);
             } catch (error) {
                 console.error('Preview error', error);
+                // Fallback to basic remark
+                try {
+                    const processedContent = await remark()
+                        .use(html)
+                        .process(formData.content);
+                    setPreviewHtml(processedContent.toString());
+                } catch (e) {
+                    console.error('Fallback preview error', e);
+                }
             }
         }, 300);
         return () => clearTimeout(timer);
     }, [formData.content]);
+
+    // Load Prism.js for syntax highlighting
+    useEffect(() => {
+        if (typeof window !== 'undefined' && previewHtml) {
+            import('prismjs').then((Prism) => {
+                // Import common languages
+                import('prismjs/components/prism-python');
+                import('prismjs/components/prism-javascript');
+                import('prismjs/components/prism-typescript');
+                import('prismjs/components/prism-jsx');
+                import('prismjs/components/prism-tsx');
+                import('prismjs/components/prism-css');
+                import('prismjs/components/prism-bash');
+                import('prismjs/components/prism-json');
+                import('prismjs/components/prism-markdown');
+                import('prismjs/components/prism-yaml');
+                import('prismjs/components/prism-sql');
+
+                setTimeout(() => {
+                    Prism.default.highlightAll();
+                }, 100);
+            });
+        }
+    }, [previewHtml]);
 
     // Publishing / Updating
     const handleSubmit = async (e) => {
@@ -371,6 +603,7 @@ Summarize key takeaways and suggest next steps or further reading.
                             id: newSlug,
                             title: formData.title.trim(),
                             tag: formData.tag,
+                            series: formData.series?.trim() || null,
                             summary: formData.summary?.trim() || '',
                             content: formData.content || '',
                             image: formData.image || null,
@@ -387,6 +620,7 @@ Summarize key takeaways and suggest next steps or further reading.
                         .update({
                             title: formData.title.trim(),
                             tag: formData.tag,
+                            series: formData.series?.trim() || null,
                             summary: formData.summary?.trim() || '',
                             content: formData.content || '',
                             image: formData.image || null,
@@ -407,6 +641,7 @@ Summarize key takeaways and suggest next steps or further reading.
                         id: formData.slug.trim(),
                         title: formData.title.trim(),
                         tag: formData.tag,
+                        series: formData.series?.trim() || null,
                         summary: formData.summary?.trim() || '',
                         content: formData.content || '',
                         image: formData.image || null,
@@ -418,16 +653,19 @@ Summarize key takeaways and suggest next steps or further reading.
                 setStatus('success');
                 setMessage('Published successfully!');
                 fetchPostsList();
+                clearAutosave();
 
                 setFormData({
                     title: '',
                     slug: '',
                     tag: 'Trend',
+                    series: '',
                     summary: '',
                     content: '',
                     image: ''
                 });
             }
+            setHasUnsavedChanges(false);
         } catch (error) {
             console.error('Error:', error);
             setStatus('error');
@@ -516,7 +754,52 @@ Summarize key takeaways and suggest next steps or further reading.
     }
 
     return (
-        <div style={{ display: 'flex', height: 'calc(100vh - 70px)', overflow: 'hidden' }}>
+        <div
+            style={{ display: 'flex', height: 'calc(100vh - 70px)', overflow: 'hidden' }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            {/* Drag overlay */}
+            {isDragging && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(26, 137, 23, 0.1)',
+                    border: '3px dashed var(--color-primary)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none'
+                }}>
+                    <div style={{
+                        background: 'var(--color-surface)',
+                        padding: '32px 48px',
+                        borderRadius: '12px',
+                        boxShadow: 'var(--shadow-lg)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📷</div>
+                        <div style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '18px',
+                            fontWeight: '600',
+                            color: 'var(--color-text-main)'
+                        }}>
+                            이미지를 놓아주세요
+                        </div>
+                        <div style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '14px',
+                            color: 'var(--color-text-muted)',
+                            marginTop: '8px'
+                        }}>
+                            커서 위치에 삽입됩니다
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* LEFT SIDEBAR */}
             <div style={{
@@ -691,8 +974,9 @@ Summarize key takeaways and suggest next steps or further reading.
                             <input
                                 type="file"
                                 ref={fileInputRef}
-                                onChange={handleImageUpload}
+                                onChange={handleFileInputChange}
                                 accept="image/*"
+                                multiple
                                 style={{ display: 'none' }}
                                 id="sidebar-upload"
                             />
@@ -708,8 +992,19 @@ Summarize key takeaways and suggest next steps or further reading.
                                 fontWeight: '600',
                                 fontSize: '13px'
                             }}>
-                                {uploading ? 'Uploading...' : '+ Upload Image'}
+                                {uploading
+                                    ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...`
+                                    : '+ Upload Images (다중 선택 가능)'}
                             </label>
+                            <p style={{
+                                fontSize: '11px',
+                                color: 'var(--color-text-muted)',
+                                textAlign: 'center',
+                                marginTop: '8px',
+                                fontFamily: 'var(--font-sans)'
+                            }}>
+                                드래그 앤 드롭 또는 Ctrl+V로도 업로드 가능
+                            </p>
                         </div>
 
                         <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
@@ -722,7 +1017,8 @@ Summarize key takeaways and suggest next steps or further reading.
                                         background: 'var(--color-background)'
                                     }}>
                                         <div style={{ height: '70px', overflow: 'hidden', cursor: 'pointer' }}
-                                            onClick={() => insertImageToContent(img.url)}>
+                                            onClick={() => insertImageToContent(img.url)}
+                                            title="클릭하면 커서 위치에 삽입">
                                             <img src={img.url} alt={img.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         </div>
                                         <div style={{ display: 'flex', borderTop: '1px solid var(--color-border)' }}>
@@ -817,6 +1113,16 @@ Summarize key takeaways and suggest next steps or further reading.
                         )}
                     </div>
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        {/* Auto-save indicator */}
+                        {!isEditMode && lastSaved && (
+                            <span style={{
+                                fontSize: '11px',
+                                color: 'var(--color-text-muted)',
+                                fontFamily: 'var(--font-sans)'
+                            }}>
+                                자동저장: {lastSaved.toLocaleTimeString()}
+                            </span>
+                        )}
                         {message && (
                             <span style={{
                                 fontFamily: 'var(--font-sans)',
@@ -933,6 +1239,27 @@ Summarize key takeaways and suggest next steps or further reading.
                                 ))}
                             </select>
                         </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Series (Optional)
+                            </label>
+                            <input
+                                name="series"
+                                value={formData.series}
+                                onChange={handleChange}
+                                placeholder="Series name..."
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '4px',
+                                    fontSize: '13px',
+                                    fontFamily: 'var(--font-sans)',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            />
+                        </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
                         <div>
@@ -1002,18 +1329,26 @@ Summarize key takeaways and suggest next steps or further reading.
                     display: 'flex',
                     gap: '6px',
                     alignItems: 'center',
-                    background: 'var(--color-surface)'
+                    background: 'var(--color-surface)',
+                    flexWrap: 'wrap'
                 }}>
                     {[
-                        { label: 'B', action: () => insertMarkdown('**', '**'), title: 'Bold', style: { fontWeight: 'bold' } },
-                        { label: 'I', action: () => insertMarkdown('_', '_'), title: 'Italic', style: { fontStyle: 'italic' } },
+                        { label: 'B', action: () => insertMarkdown('**', '**'), title: 'Bold (Ctrl+B)', style: { fontWeight: 'bold' } },
+                        { label: 'I', action: () => insertMarkdown('_', '_'), title: 'Italic (Ctrl+I)', style: { fontStyle: 'italic' } },
                         { label: 'H1', action: () => insertMarkdown('# ', ''), title: 'Heading 1' },
-                        { label: 'H2', action: () => insertMarkdown('## ', ''), title: 'Heading 2' },
+                        { label: 'H2', action: () => insertMarkdown('## ', ''), title: 'Heading 2 (Ctrl+H)' },
                         { label: 'H3', action: () => insertMarkdown('### ', ''), title: 'Heading 3' },
                         { label: '"', action: () => insertMarkdown('> ', ''), title: 'Quote' },
                         { label: '•', action: () => insertMarkdown('- ', ''), title: 'List' },
-                        { label: '<>', action: () => insertMarkdown('```\n', '\n```'), title: 'Code' },
-                        { label: '🔗', action: () => insertMarkdown('[', '](url)'), title: 'Link' },
+                        { label: '1.', action: () => insertMarkdown('1. ', ''), title: 'Numbered List' },
+                        { label: '☐', action: () => insertMarkdown('- [ ] ', ''), title: 'Checkbox' },
+                        { label: '—', action: () => insertMarkdown('\n---\n', ''), title: 'Horizontal Rule' },
+                        { label: '<>', action: () => insertMarkdown('```\n', '\n```'), title: 'Code Block (Ctrl+/)' },
+                        { label: '🔗', action: () => insertMarkdown('[', '](url)'), title: 'Link (Ctrl+K)' },
+                        { label: '📷', action: () => insertMarkdown('![', '](url)'), title: 'Image' },
+                        { label: '∑', action: () => insertMarkdown('$$\n', '\n$$'), title: 'LaTeX Block' },
+                        { label: 'π', action: () => insertMarkdown('$', '$'), title: 'Inline LaTeX' },
+                        { label: '📊', action: () => insertMarkdown('\n| Column 1 | Column 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |\n', ''), title: 'Table' },
                     ].map((btn, i) => (
                         <button
                             key={i}
@@ -1048,17 +1383,41 @@ Summarize key takeaways and suggest next steps or further reading.
                     >
                         Template
                     </button>
+
+                    {/* Word count */}
+                    <div style={{ marginLeft: 'auto', fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-sans)' }}>
+                        {wordCount} words · {charCount} chars
+                    </div>
                 </div>
 
                 {/* Editor */}
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--color-border)' }}>
                         <textarea
+                            ref={textareaRef}
                             id="content-editor"
                             name="content"
                             value={formData.content}
                             onChange={handleChange}
-                            placeholder="Write your content in Markdown..."
+                            onKeyDown={handleKeyDown}
+                            onPaste={handlePaste}
+                            placeholder="Write your content in Markdown...
+
+단축키:
+• Ctrl+B: 굵게
+• Ctrl+I: 기울임
+• Ctrl+K: 링크
+• Ctrl+H: 제목
+• Ctrl+/: 코드 블록
+• Ctrl+S: 저장
+
+LaTeX 수식:
+• 인라인: $E = mc^2$
+• 블록: $$\\sum_{i=1}^{n} x_i$$
+
+이미지:
+• 드래그 앤 드롭
+• Ctrl+V로 붙여넣기"
                             style={{
                                 flex: 1,
                                 padding: '20px',
@@ -1101,6 +1460,35 @@ Summarize key takeaways and suggest next steps or further reading.
                     </div>
                 </div>
             </div>
+
+            {/* KaTeX CSS */}
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+
+            {/* Prism.js CSS */}
+            <style>{`
+                pre[class*="language-"] {
+                    background: #1e1e1e;
+                    padding: 16px;
+                    border-radius: 8px;
+                    overflow-x: auto;
+                    margin: 16px 0;
+                }
+                code[class*="language-"] {
+                    font-family: "Fira Code", "SF Mono", Monaco, monospace;
+                    font-size: 14px;
+                    line-height: 1.5;
+                }
+                .token.comment { color: #6a9955; }
+                .token.string { color: #ce9178; }
+                .token.number { color: #b5cea8; }
+                .token.keyword { color: #569cd6; }
+                .token.function { color: #dcdcaa; }
+                .token.operator { color: #d4d4d4; }
+                .token.class-name { color: #4ec9b0; }
+                .token.punctuation { color: #d4d4d4; }
+                .token.property { color: #9cdcfe; }
+                .token.boolean { color: #569cd6; }
+            `}</style>
         </div>
     );
 }

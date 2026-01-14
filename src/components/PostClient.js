@@ -12,6 +12,11 @@ import ReadingProgress from '@/components/ReadingProgress';
 import CodeBlockEnhancer from '@/components/CodeBlockEnhancer';
 import TableOfContents from '@/components/TableOfContents';
 import TextHighlightShare from '@/components/TextHighlightShare';
+import ShareButtons from '@/components/ShareButtons';
+import ImageLightbox from '@/components/ImageLightbox';
+import GiscusComments from '@/components/GiscusComments';
+import ViewCount from '@/components/ViewCount';
+import SeriesNavigation from '@/components/SeriesNavigation';
 
 // Calculate reading time
 function calculateReadingTime(content) {
@@ -182,8 +187,15 @@ export default function PostClient({ slug }) {
             <span>{formatDate(postData.date)}</span>
             <span style={{ opacity: 0.5 }}>•</span>
             <span>{readingTime} min read</span>
+            <span style={{ opacity: 0.5 }}>•</span>
+            <ViewCount postId={slug} />
           </div>
         </header>
+
+        {/* Series Navigation */}
+        {postData.series && (
+          <SeriesNavigation currentPostId={slug} seriesName={postData.series} />
+        )}
 
         {/* Cover Image */}
         {postData.image && (
@@ -212,6 +224,9 @@ export default function PostClient({ slug }) {
 
         {/* Text Highlight Share */}
         <TextHighlightShare />
+
+        {/* Social Share Buttons */}
+        <ShareButtons title={postData.title} summary={postData.summary} />
 
         {/* Author Box */}
         <div className="author-box">
@@ -262,6 +277,9 @@ export default function PostClient({ slug }) {
         {relatedPosts.length > 0 && (
           <RelatedPosts posts={relatedPosts} />
         )}
+
+        {/* Giscus Comments */}
+        <GiscusComments />
       </article>
 
       {/* Sidebar with TOC */}
@@ -273,6 +291,7 @@ export default function PostClient({ slug }) {
       <FloatingSubscribe />
       <EditButton postId={slug} />
       <CodeBlockEnhancer />
+      <ImageLightbox />
     </>
   );
 }
