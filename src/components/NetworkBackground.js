@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function NetworkBackground() {
     const canvasRef = useRef(null);
     const animationRef = useRef(null);
     const nodesRef = useRef([]);
-    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -16,58 +15,63 @@ export default function NetworkBackground() {
         let width = window.innerWidth;
         let height = window.innerHeight;
 
-        // Resize handler
-        const handleResize = () => {
+        // Set canvas size
+        const setCanvasSize = () => {
+            const dpr = window.devicePixelRatio || 1;
             width = window.innerWidth;
             height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-            initNodes();
-        };
-
-        // Visibility change handler for performance
-        const handleVisibilityChange = () => {
-            setIsVisible(!document.hidden);
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
         };
 
         // Initialize nodes
         const initNodes = () => {
             const isMobile = width < 768;
-            const nodeCount = isMobile ? 20 : 35;
+            const nodeCount = isMobile ? 25 : 40;
             nodesRef.current = [];
 
             for (let i = 0; i < nodeCount; i++) {
                 nodesRef.current.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
-                    vx: (Math.random() - 0.5) * 0.3,
-                    vy: (Math.random() - 0.5) * 0.3,
-                    radius: Math.random() * 1.5 + 1,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    radius: Math.random() * 2 + 1.5,
                 });
             }
         };
 
-        // Get theme color
-        const getThemeColor = () => {
+        // Get theme colors
+        const getColors = () => {
             const theme = document.documentElement.getAttribute('data-theme');
-            return theme === 'dark'
-                ? { node: 'rgba(34, 197, 94, 0.12)', line: 'rgba(34, 197, 94, 0.04)' }
-                : { node: 'rgba(26, 137, 23, 0.08)', line: 'rgba(26, 137, 23, 0.03)' };
+            if (theme === 'dark') {
+                return {
+                    node: 'rgba(34, 197, 94, 0.25)',
+                    lineBase: [34, 197, 94]
+                };
+            }
+            return {
+                node: 'rgba(26, 137, 23, 0.15)',
+                lineBase: [26, 137, 23]
+            };
         };
 
         // Animation loop
         const animate = () => {
-            if (!isVisible) {
+            if (document.hidden) {
                 animationRef.current = requestAnimationFrame(animate);
                 return;
             }
 
             ctx.clearRect(0, 0, width, height);
-            const colors = getThemeColor();
+            const colors = getColors();
             const nodes = nodesRef.current;
-            const connectionDistance = width < 768 ? 120 : 150;
+            const connectionDistance = width < 768 ? 100 : 150;
 
-            // Update and draw nodes
+            // Update and draw
             nodes.forEach((node, i) => {
                 // Update position
                 node.x += node.vx;
@@ -95,12 +99,13 @@ export default function NetworkBackground() {
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
                     if (distance < connectionDistance) {
-                        const opacity = (1 - distance / connectionDistance) * 0.6;
+                        const opacity = (1 - distance / connectionDistance) * 0.15;
+                        const [r, g, b] = colors.lineBase;
                         ctx.beginPath();
                         ctx.moveTo(node.x, node.y);
                         ctx.lineTo(other.x, other.y);
-                        ctx.strokeStyle = colors.line.replace('0.03', (0.03 * opacity).toFixed(3)).replace('0.04', (0.04 * opacity).toFixed(3));
-                        ctx.lineWidth = 0.5;
+                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                        ctx.lineWidth = 1;
                         ctx.stroke();
                     }
                 }
@@ -109,23 +114,26 @@ export default function NetworkBackground() {
             animationRef.current = requestAnimationFrame(animate);
         };
 
+        // Resize handler
+        const handleResize = () => {
+            setCanvasSize();
+            initNodes();
+        };
+
         // Initialize
-        handleResize();
+        setCanvasSize();
+        initNodes();
         animate();
 
-        // Event listeners
         window.addEventListener('resize', handleResize);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        // Cleanup
         return () => {
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
             window.removeEventListener('resize', handleResize);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [isVisible]);
+    }, []);
 
     return (
         <canvas
@@ -136,7 +144,7 @@ export default function NetworkBackground() {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                zIndex: -1,
+                zIndex: 0,
                 pointerEvents: 'none',
             }}
             aria-hidden="true"

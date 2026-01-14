@@ -16,7 +16,6 @@ import ShareButtons from '@/components/ShareButtons';
 import ImageLightbox from '@/components/ImageLightbox';
 import GiscusComments from '@/components/GiscusComments';
 import ViewCount from '@/components/ViewCount';
-import SeriesNavigation from '@/components/SeriesNavigation';
 
 // Calculate reading time
 function calculateReadingTime(content) {
@@ -192,10 +191,6 @@ export default function PostClient({ slug }) {
           </div>
         </header>
 
-        {/* Series Navigation */}
-        {postData.series && (
-          <SeriesNavigation currentPostId={slug} seriesName={postData.series} />
-        )}
 
         {/* Cover Image */}
         {postData.image && (

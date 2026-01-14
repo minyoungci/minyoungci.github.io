@@ -55,14 +55,13 @@ function AdminContent() {
         title: '',
         slug: '',
         tag: 'Trend',
-        series: '',
         summary: '',
         content: '',
         image: ''
     });
 
     // Category options
-    const categoryOptions = ['Trend', 'Research', 'Series', 'Life'];
+    const categoryOptions = ['Trend', 'Research', 'Life'];
 
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
@@ -146,7 +145,6 @@ function AdminContent() {
                 title: data.title || '',
                 slug: data.id || '',
                 tag: data.tag || 'Trend',
-                series: data.series || '',
                 summary: data.summary || '',
                 content: data.content || '',
                 image: data.image || ''
@@ -169,7 +167,6 @@ function AdminContent() {
             title: '',
             slug: '',
             tag: 'Trend',
-            series: '',
             summary: '',
             content: '',
             image: ''
@@ -603,7 +600,6 @@ Summarize key takeaways and suggest next steps or further reading.
                             id: newSlug,
                             title: formData.title.trim(),
                             tag: formData.tag,
-                            series: formData.series?.trim() || null,
                             summary: formData.summary?.trim() || '',
                             content: formData.content || '',
                             image: formData.image || null,
@@ -620,7 +616,6 @@ Summarize key takeaways and suggest next steps or further reading.
                         .update({
                             title: formData.title.trim(),
                             tag: formData.tag,
-                            series: formData.series?.trim() || null,
                             summary: formData.summary?.trim() || '',
                             content: formData.content || '',
                             image: formData.image || null,
@@ -641,7 +636,6 @@ Summarize key takeaways and suggest next steps or further reading.
                         id: formData.slug.trim(),
                         title: formData.title.trim(),
                         tag: formData.tag,
-                        series: formData.series?.trim() || null,
                         summary: formData.summary?.trim() || '',
                         content: formData.content || '',
                         image: formData.image || null,
@@ -659,7 +653,6 @@ Summarize key takeaways and suggest next steps or further reading.
                     title: '',
                     slug: '',
                     tag: 'Trend',
-                    series: '',
                     summary: '',
                     content: '',
                     image: ''
@@ -1238,27 +1231,6 @@ Summarize key takeaways and suggest next steps or further reading.
                                     <option key={cat} value={cat}>{cat}</option>
                                 ))}
                             </select>
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Series (Optional)
-                            </label>
-                            <input
-                                name="series"
-                                value={formData.series}
-                                onChange={handleChange}
-                                placeholder="Series name..."
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
-                                    border: '1px solid var(--color-border)',
-                                    borderRadius: '4px',
-                                    fontSize: '13px',
-                                    fontFamily: 'var(--font-sans)',
-                                    background: 'var(--color-background)',
-                                    color: 'var(--color-text-main)'
-                                }}
-                            />
                         </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
