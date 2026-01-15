@@ -15,23 +15,41 @@ const categoryDescriptions = {
 export default function SectionClient({ category }) {
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (!category) return;
 
         async function fetchPosts() {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('tag', category)
-                .order('date', { ascending: false });
+            setError(null);
 
-            if (error) {
-                console.error("Error fetching section posts:", error);
-            } else {
-                setFilteredPosts(data || []);
+            // Check if supabase client is available
+            if (!supabase) {
+                console.error("Supabase client not available");
+                setError("데이터베이스 연결을 사용할 수 없습니다.");
+                setLoading(false);
+                return;
             }
+
+            try {
+                const { data, error: fetchError } = await supabase
+                    .from('posts')
+                    .select('id, title, tag, summary, image, date')
+                    .eq('tag', category)
+                    .order('date', { ascending: false });
+
+                if (fetchError) {
+                    console.error("Error fetching section posts:", fetchError);
+                    setError("글을 불러오는데 실패했습니다.");
+                } else {
+                    setFilteredPosts(data || []);
+                }
+            } catch (err) {
+                console.error("Unexpected error:", err);
+                setError("예상치 못한 오류가 발생했습니다.");
+            }
+
             setLoading(false);
         }
 
@@ -68,6 +86,11 @@ export default function SectionClient({ category }) {
                 {loading ? (
                     <div className="loading-state">
                         글을 불러오는 중...
+                    </div>
+                ) : error ? (
+                    <div className="empty-state animate-fade-in">
+                        <div className="empty-state-icon">⚠️</div>
+                        <p className="empty-state-text">{error}</p>
                     </div>
                 ) : filteredPosts.length > 0 ? (
                     <div className="posts-grid animate-fade-in" style={{ animationDelay: '0.2s' }}>
