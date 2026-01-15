@@ -60,6 +60,6 @@ export async function generateStaticParams() {
 }
 
 export default async function Section({ params }) {
-    const { category } = params;
+    const { category } = await params;
     return <SectionClient category={category} />;
 }
