@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { remark } from 'remark';
-import html from 'remark-html';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
+import rehypeStringify from 'rehype-stringify';
 import RelatedPosts from '@/components/RelatedPosts';
 import FloatingSubscribe from '@/components/FloatingSubscribe';
 import EditButton from '@/components/EditButton';
@@ -57,9 +60,12 @@ export default function PostClient({ slug }) {
           return;
         }
 
-        // Process markdown to HTML
-        const processedContent = await remark()
-          .use(html)
+        // Process markdown to HTML (with raw HTML support for videos etc.)
+        const processedContent = await unified()
+          .use(remarkParse)
+          .use(remarkRehype, { allowDangerousHtml: true })
+          .use(rehypeRaw)
+          .use(rehypeStringify, { allowDangerousHtml: true })
           .process(post.content || '');
         const contentHtml = processedContent.toString();
 
