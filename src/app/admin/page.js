@@ -38,6 +38,12 @@ function AdminContent() {
     const fileInputRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
 
+    // Video Manager State
+    const [videos, setVideos] = useState([]);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
+    const [videoUploadProgress, setVideoUploadProgress] = useState({ current: 0, total: 0 });
+    const videoFileInputRef = useRef(null);
+
     // Post Manager State
     const [activeTab, setActiveTab] = useState('posts');
     const [postsList, setPostsList] = useState([]);
@@ -202,6 +208,7 @@ function AdminContent() {
         if (isAuthenticated) {
             fetchPostsList();
             fetchImages();
+            fetchVideos();
         }
     }, [isAuthenticated]);
 
@@ -314,13 +321,27 @@ function AdminContent() {
         e.preventDefault();
         setIsDragging(false);
 
-        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-        if (files.length > 0) {
-            const urls = await handleImageUpload(files);
-            // Insert all dropped images at cursor position
+        const allFiles = Array.from(e.dataTransfer.files);
+        const imageFiles = allFiles.filter(f => f.type.startsWith('image/'));
+        const videoFiles = allFiles.filter(f => f.type.startsWith('video/'));
+
+        // Handle images
+        if (imageFiles.length > 0) {
+            const urls = await handleImageUpload(imageFiles);
             if (urls.length > 0) {
                 const markdown = urls.map(url => `![Image](${url})`).join('\n');
                 insertAtCursor(markdown);
+            }
+        }
+
+        // Handle videos
+        if (videoFiles.length > 0) {
+            const urls = await handleVideoUpload(videoFiles);
+            if (urls.length > 0) {
+                const videoTags = urls.map(url => `<video controls width="100%" style="max-width: 800px; border-radius: 8px;">
+  <source src="${url}" type="video/mp4">
+</video>`).join('\n\n');
+                insertAtCursor(videoTags);
             }
         }
     };
@@ -369,6 +390,104 @@ function AdminContent() {
             console.error('Delete Error:', error);
             alert('Failed: ' + error.message);
         }
+    };
+
+    // Video Management
+    const fetchVideos = async () => {
+        try {
+            const { data, error } = await supabase.storage
+                .from('images')
+                .list('videos', { limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } });
+
+            if (error) throw error;
+
+            const loadedVideos = (data || []).filter(file => file.name !== '.emptyFolderPlaceholder').map(file => {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('images')
+                    .getPublicUrl(`videos/${file.name}`);
+                return { name: file.name, url: publicUrl };
+            });
+
+            setVideos(loadedVideos);
+        } catch (error) {
+            console.error('Error fetching videos:', error);
+        }
+    };
+
+    const handleVideoUpload = async (files) => {
+        if (!files || files.length === 0) return;
+
+        setUploadingVideo(true);
+        setVideoUploadProgress({ current: 0, total: files.length });
+        const uploadedUrls = [];
+
+        try {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+                setVideoUploadProgress({ current: i + 1, total: files.length });
+
+                const { error: uploadError } = await supabase.storage
+                    .from('images')
+                    .upload(`videos/${fileName}`, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(`videos/${fileName}`);
+                uploadedUrls.push(publicUrl);
+            }
+
+            await fetchVideos();
+            setMessage(`${files.length}개 영상 업로드 완료!`);
+
+            return uploadedUrls;
+        } catch (error) {
+            console.error('Video Upload Error:', error);
+            setMessage('Error uploading video: ' + error.message);
+            return [];
+        } finally {
+            setUploadingVideo(false);
+            setVideoUploadProgress({ current: 0, total: 0 });
+            if (videoFileInputRef.current) videoFileInputRef.current.value = '';
+        }
+    };
+
+    const handleVideoFileInputChange = (e) => {
+        const files = Array.from(e.target.files);
+        handleVideoUpload(files);
+    };
+
+    const handleDeleteVideo = async (videoName) => {
+        if (deleteConfirm !== `video_${videoName}`) {
+            setDeleteConfirm(`video_${videoName}`);
+            setTimeout(() => setDeleteConfirm(null), 3000);
+            return;
+        }
+
+        try {
+            const { error } = await supabase.storage
+                .from('images')
+                .remove([`videos/${videoName}`]);
+
+            if (error) throw error;
+
+            await fetchVideos();
+            setDeleteConfirm(null);
+            setMessage('Video deleted.');
+        } catch (error) {
+            console.error('Delete Error:', error);
+            alert('Failed: ' + error.message);
+        }
+    };
+
+    const insertVideoToContent = (url) => {
+        const videoTag = `<video controls width="100%" style="max-width: 800px; border-radius: 8px;">
+  <source src="${url}" type="video/mp4">
+  Your browser does not support the video tag.
+</video>`;
+        insertAtCursor(videoTag);
     };
 
     // Insert at cursor position
@@ -773,14 +892,14 @@ Summarize key takeaways and suggest next steps or further reading.
                         boxShadow: 'var(--shadow-lg)',
                         textAlign: 'center'
                     }}>
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📷</div>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📷 🎬</div>
                         <div style={{
                             fontFamily: 'var(--font-sans)',
                             fontSize: '18px',
                             fontWeight: '600',
                             color: 'var(--color-text-main)'
                         }}>
-                            이미지를 놓아주세요
+                            이미지 또는 영상을 놓아주세요
                         </div>
                         <div style={{
                             fontFamily: 'var(--font-sans)',
@@ -962,8 +1081,19 @@ Summarize key takeaways and suggest next steps or further reading.
 
                 {/* Media Tab */}
                 {activeTab === 'media' && (
-                    <>
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                        {/* Image Upload Section */}
                         <div style={{ padding: '12px', borderBottom: '1px solid var(--color-border)' }}>
+                            <div style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: 'var(--color-text-muted)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                marginBottom: '8px'
+                            }}>
+                                📷 이미지
+                            </div>
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -987,20 +1117,12 @@ Summarize key takeaways and suggest next steps or further reading.
                             }}>
                                 {uploading
                                     ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...`
-                                    : '+ Upload Images (다중 선택 가능)'}
+                                    : '+ Upload Images'}
                             </label>
-                            <p style={{
-                                fontSize: '11px',
-                                color: 'var(--color-text-muted)',
-                                textAlign: 'center',
-                                marginTop: '8px',
-                                fontFamily: 'var(--font-sans)'
-                            }}>
-                                드래그 앤 드롭 또는 Ctrl+V로도 업로드 가능
-                            </p>
                         </div>
 
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+                        {/* Image Grid */}
+                        <div style={{ padding: '12px', borderBottom: '1px solid var(--color-border)' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                 {images.map((img) => (
                                     <div key={img.name} style={{
@@ -1049,12 +1171,148 @@ Summarize key takeaways and suggest next steps or further reading.
                                 ))}
                             </div>
                             {images.length === 0 && (
-                                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '30px' }}>
+                                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '10px' }}>
                                     No images yet
                                 </p>
                             )}
                         </div>
-                    </>
+
+                        {/* Video Upload Section */}
+                        <div style={{ padding: '12px', borderBottom: '1px solid var(--color-border)' }}>
+                            <div style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: 'var(--color-text-muted)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                marginBottom: '8px'
+                            }}>
+                                🎬 영상
+                            </div>
+                            <input
+                                type="file"
+                                ref={videoFileInputRef}
+                                onChange={handleVideoFileInputChange}
+                                accept="video/*"
+                                multiple
+                                style={{ display: 'none' }}
+                                id="video-upload"
+                            />
+                            <label htmlFor="video-upload" style={{
+                                display: 'block',
+                                textAlign: 'center',
+                                padding: '10px',
+                                background: '#6366f1',
+                                color: '#fff',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontFamily: 'var(--font-sans)',
+                                fontWeight: '600',
+                                fontSize: '13px'
+                            }}>
+                                {uploadingVideo
+                                    ? `Uploading ${videoUploadProgress.current}/${videoUploadProgress.total}...`
+                                    : '+ Upload Videos'}
+                            </label>
+                            <p style={{
+                                fontSize: '11px',
+                                color: 'var(--color-text-muted)',
+                                textAlign: 'center',
+                                marginTop: '8px',
+                                fontFamily: 'var(--font-sans)'
+                            }}>
+                                Manim, MP4 등 영상 파일
+                            </p>
+                        </div>
+
+                        {/* Video Grid */}
+                        <div style={{ padding: '12px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {videos.map((vid) => (
+                                    <div key={vid.name} style={{
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: '6px',
+                                        overflow: 'hidden',
+                                        background: 'var(--color-background)'
+                                    }}>
+                                        <div
+                                            style={{
+                                                padding: '8px 12px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px'
+                                            }}
+                                            onClick={() => insertVideoToContent(vid.url)}
+                                            title="클릭하면 커서 위치에 삽입"
+                                        >
+                                            <span style={{ fontSize: '16px' }}>🎬</span>
+                                            <span style={{
+                                                fontSize: '12px',
+                                                color: 'var(--color-text-main)',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                flex: 1
+                                            }}>
+                                                {vid.name}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', borderTop: '1px solid var(--color-border)' }}>
+                                            <button
+                                                onClick={() => window.open(vid.url, '_blank')}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '6px',
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    borderRight: '1px solid var(--color-border)',
+                                                    cursor: 'pointer',
+                                                    fontSize: '10px',
+                                                    color: 'var(--color-text-muted)'
+                                                }}
+                                            >
+                                                Preview
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteVideo(vid.name)}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '6px',
+                                                    background: deleteConfirm === `video_${vid.name}` ? '#dc3545' : 'transparent',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    fontSize: '10px',
+                                                    color: deleteConfirm === `video_${vid.name}` ? '#fff' : 'var(--color-text-muted)'
+                                                }}
+                                            >
+                                                {deleteConfirm === `video_${vid.name}` ? 'Confirm' : 'Del'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {videos.length === 0 && (
+                                <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '10px' }}>
+                                    No videos yet
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Help text */}
+                        <div style={{ padding: '12px', borderTop: '1px solid var(--color-border)' }}>
+                            <p style={{
+                                fontSize: '11px',
+                                color: 'var(--color-text-muted)',
+                                textAlign: 'center',
+                                fontFamily: 'var(--font-sans)',
+                                lineHeight: '1.5'
+                            }}>
+                                💡 드래그 앤 드롭으로도 업로드 가능<br />
+                                클릭하면 커서 위치에 삽입됩니다
+                            </p>
+                        </div>
+                    </div>
                 )}
             </div>
 
