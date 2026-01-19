@@ -11,6 +11,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeStringify from 'rehype-stringify';
 import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 
@@ -628,9 +629,10 @@ Summarize key takeaways and suggest next steps or further reading.
                 const result = await unified()
                     .use(remarkParse)
                     .use(remarkMath)
-                    .use(remarkRehype)
+                    .use(remarkRehype, { allowDangerousHtml: true })
+                    .use(rehypeRaw)
                     .use(rehypeKatex)
-                    .use(rehypeStringify)
+                    .use(rehypeStringify, { allowDangerousHtml: true })
                     .process(formData.content);
 
                 let contentHtml = result.toString();
@@ -647,7 +649,7 @@ Summarize key takeaways and suggest next steps or further reading.
                 // Fallback to basic remark
                 try {
                     const processedContent = await remark()
-                        .use(html)
+                        .use(html, { sanitize: false })
                         .process(formData.content);
                     setPreviewHtml(processedContent.toString());
                 } catch (e) {
