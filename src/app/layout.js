@@ -75,6 +75,15 @@ export default function RootLayout({ children }) {
     }
   };
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Minyoungci",
+    "url": "https://minyoungci.github.io",
+    "logo": "https://minyoungci.github.io/icon.svg",
+    "sameAs": []
+  };
+
   const themeInitScript = `
     (function() {
       try {
@@ -94,6 +103,10 @@ export default function RootLayout({ children }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
       </head>
       <body suppressHydrationWarning={true}>

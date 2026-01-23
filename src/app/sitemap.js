@@ -13,7 +13,7 @@ export default async function sitemap() {
         priority: 0.7,
     }));
 
-    const categories = ['Classic', 'Trend', 'Guide', 'News'];
+    const categories = ['Trend', 'Research', 'Life'];
     const sectionUrls = categories.map(cat => ({
         url: `${baseUrl}/section/${cat}`,
         lastModified: new Date(),

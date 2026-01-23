@@ -142,13 +142,21 @@ export default function PostClient({ slug }) {
               },
               "author": {
                 "@type": "Person",
+                "@id": "https://minyoungci.github.io/#author",
                 "name": "Minyoungci",
-                "url": "https://minyoungci.github.io"
+                "url": "https://minyoungci.github.io",
+                "description": "Exploring technology, research, and life. Writing about trends, deep technical insights, and personal experiences.",
+                "sameAs": []
               },
               "publisher": {
-                "@type": "Person",
+                "@type": "Organization",
+                "@id": "https://minyoungci.github.io/#organization",
                 "name": "Minyoungci",
-                "url": "https://minyoungci.github.io"
+                "url": "https://minyoungci.github.io",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://minyoungci.github.io/icon.svg"
+                }
               }
             })
           }}
