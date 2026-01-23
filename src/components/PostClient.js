@@ -133,8 +133,8 @@ export default function PostClient({ slug }) {
               "headline": postData.title,
               "description": postData.summary,
               "image": postData.image,
-              "datePublished": postData.date,
-              "dateModified": postData.date,
+              "datePublished": postData.date ? `${postData.date}T00:00:00+09:00` : null,
+              "dateModified": postData.date ? `${postData.date}T00:00:00+09:00` : null,
               "wordCount": postData.content ? postData.content.split(/\s+/).length : 0,
               "mainEntityOfPage": {
                 "@type": "WebPage",
