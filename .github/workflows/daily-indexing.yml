@@ -1,0 +1,33 @@
+name: Daily Indexing
+
+on:
+  schedule:
+    # 매일 한국시간 오전 9시 (UTC 00:00)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  indexing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Google API key file
+        run: echo '${{ secrets.GOOGLE_INDEXING_KEY }}' > google-indexing-key.json
+
+      - name: Run indexing
+        run: npm run indexing
+
+      - name: Cleanup
+        run: rm -f google-indexing-key.json
