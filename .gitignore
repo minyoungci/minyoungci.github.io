@@ -27,3 +27,7 @@ pnpm-debug.log*
 
 # Vercel
 .vercel
+
+# Google API Keys
+google-indexing-key.json
+*-credentials.json
