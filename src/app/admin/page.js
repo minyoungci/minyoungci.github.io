@@ -179,14 +179,44 @@ function AdminContent() {
                 bodyLines.push(line);
             }
 
-            const content = bodyLines.join('\n').replace(/^(\s|-{3,})+/, '').trim();
+            let content = bodyLines.join('\n').replace(/^(\s|-{3,})+/, '').trim();
+
+            // 맨 위의 긴 "> 출처:" 인용 블록은 본문 끝으로 옮긴다 (도입부 레이아웃 보호)
+            let sourceBlock = '';
+            const srcMatch = content.match(/^(?:>[^\n]*(?:\n|$))+/);
+            if (srcMatch && srcMatch[0].includes('출처')) {
+                sourceBlock = srcMatch[0].trim();
+                content = content.slice(srcMatch[0].length).trim();
+            }
+
+            // 첫 이미지는 커버로 추출하고 본문에서는 제거 (중복 방지)
             const imageMatch = content.match(/!\[[^\]]*\]\((https?:[^)\s]+)\)/);
+            if (imageMatch) {
+                content = content.replace(imageMatch[0], '');
+            }
+
+            // 구분선 정리: 연속된 --- 병합, 문서 앞뒤의 --- 제거
+            let prev;
+            do {
+                prev = content;
+                content = content.replace(/\n[ \t]*-{3,}[ \t]*(?:\n[ \t]*)+-{3,}[ \t]*(\n|$)/g, '\n\n---\n');
+            } while (content !== prev);
+            content = content
+                .replace(/^\s*(?:-{3,}[ \t]*\n\s*)+/, '')
+                .replace(/(?:\n[ \t]*-{3,}[ \t]*)+\s*$/, '')
+                .trim();
+
+            if (sourceBlock) {
+                content = `${content}\n\n---\n\n${sourceBlock}`;
+            }
+
             const summarySource = content
                 .split(/\n\s*\n/)
                 .find((block) => {
                     const t = block.trim();
                     return t && !t.startsWith('#') && !t.startsWith('![')
-                        && !t.startsWith('---') && !t.startsWith('*출처') && !t.startsWith('|');
+                        && !t.startsWith('---') && !t.startsWith('>')
+                        && !t.startsWith('*출처') && !t.startsWith('|');
                 }) || '';
             const summary = summarySource
                 .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
