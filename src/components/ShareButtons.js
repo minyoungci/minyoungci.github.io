@@ -58,12 +58,12 @@ export default function ShareButtons({ title, summary }) {
         justifyContent: 'center',
         width: '40px',
         height: '40px',
-        borderRadius: '50%',
-        border: '1px solid var(--color-border)',
+        borderRadius: 0,
+        border: '1px solid var(--color-text-main)',
         background: 'var(--color-background)',
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        color: 'var(--color-text-muted)',
+        transition: 'opacity 0.15s ease',
+        color: 'var(--color-text-main)',
     };
 
     return (
@@ -104,9 +104,8 @@ export default function ShareButtons({ title, summary }) {
                     onClick={copyLink}
                     style={{
                         ...buttonStyle,
-                        background: copied ? 'var(--color-primary)' : 'var(--color-background)',
-                        color: copied ? 'white' : 'var(--color-text-muted)',
-                        borderColor: copied ? 'var(--color-primary)' : 'var(--color-border)',
+                        background: copied ? 'var(--color-text-main)' : 'var(--color-background)',
+                        color: copied ? 'var(--color-background)' : 'var(--color-text-main)',
                     }}
                     title={copied ? 'Link copied!' : 'Copy link'}
                     aria-label="Copy link"
@@ -130,22 +129,20 @@ export default function ShareButtons({ title, summary }) {
                     gap: 16px;
                     margin-top: 32px;
                     padding-top: 24px;
-                    border-top: 1px solid var(--color-border);
+                    border-top: 1px solid var(--color-hairline);
                 }
                 .share-label {
                     font-family: var(--font-sans);
                     font-size: 14px;
-                    font-weight: 600;
-                    color: var(--color-text-muted);
+                    font-weight: 400;
+                    color: var(--color-text-main);
                 }
                 .share-icons {
                     display: flex;
                     gap: 8px;
                 }
                 .share-icons button:hover {
-                    border-color: var(--color-primary);
-                    color: var(--color-primary);
-                    transform: translateY(-2px);
+                    opacity: 0.6;
                 }
             `}</style>
         </div>
