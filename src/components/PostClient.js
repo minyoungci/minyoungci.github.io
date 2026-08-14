@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { SAMPLE_POSTS, getSamplePostById } from '@/lib/samplePosts';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -45,9 +46,40 @@ export default function PostClient({ slug }) {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    // Process markdown to HTML (with raw HTML support for videos etc.)
+    async function renderMarkdown(markdown) {
+      const processedContent = await unified()
+        .use(remarkParse)
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeRaw)
+        .use(rehypeStringify, { allowDangerousHtml: true })
+        .process(markdown || '');
+      return processedContent.toString();
+    }
+
+    // Sample fallback keeps post pages working until Supabase has real posts
+    async function useSamplePost() {
+      const samplePost = getSamplePostById(slug);
+      if (!samplePost) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
+
+      setPostData({
+        ...samplePost,
+        contentHtml: await renderMarkdown(samplePost.content)
+      });
+      setRelatedPosts(
+        SAMPLE_POSTS
+          .filter((post) => post.id !== slug && post.tag === samplePost.tag)
+          .slice(0, 2)
+      );
+      setLoading(false);
+    }
+
     async function fetchPost() {
       try {
-        // Fetch post data
         const { data: post, error: postError } = await supabase
           .from('posts')
           .select('*')
@@ -55,23 +87,13 @@ export default function PostClient({ slug }) {
           .single();
 
         if (postError || !post) {
-          setError(true);
-          setLoading(false);
+          await useSamplePost();
           return;
         }
 
-        // Process markdown to HTML (with raw HTML support for videos etc.)
-        const processedContent = await unified()
-          .use(remarkParse)
-          .use(remarkRehype, { allowDangerousHtml: true })
-          .use(rehypeRaw)
-          .use(rehypeStringify, { allowDangerousHtml: true })
-          .process(post.content || '');
-        const contentHtml = processedContent.toString();
-
         setPostData({
           ...post,
-          contentHtml
+          contentHtml: await renderMarkdown(post.content)
         });
 
         // Fetch related posts
@@ -85,9 +107,8 @@ export default function PostClient({ slug }) {
         setRelatedPosts(allPosts || []);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching post:', err);
-        setError(true);
-        setLoading(false);
+        console.warn('Supabase unavailable, trying sample posts:', err?.message || err);
+        await useSamplePost();
       }
     }
 
@@ -199,7 +220,6 @@ export default function PostClient({ slug }) {
             <span>{formatDate(postData.date)}</span>
             <span style={{ opacity: 0.5 }}>•</span>
             <span>{readingTime} min read</span>
-            <span style={{ opacity: 0.5 }}>•</span>
             <ViewCount postId={slug} />
           </div>
         </header>
@@ -209,7 +229,6 @@ export default function PostClient({ slug }) {
         {postData.image && (
           <div style={{
             margin: '0 0 48px',
-            borderRadius: 'var(--border-radius)',
             overflow: 'hidden'
           }}>
             <img
@@ -241,13 +260,13 @@ export default function PostClient({ slug }) {
           <div
             className="author-box-avatar"
             style={{
-              background: 'linear-gradient(135deg, #1a8917 0%, #2ecc71 100%)',
+              background: 'var(--color-text-main)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '28px',
-              fontWeight: '700',
-              color: 'white'
+              fontSize: '24px',
+              fontWeight: '400',
+              color: 'var(--color-background)'
             }}
           >
             M
@@ -263,17 +282,19 @@ export default function PostClient({ slug }) {
 
         {/* Back to Home */}
         <div style={{
-          marginTop: '60px',
+          marginTop: '64px',
           paddingTop: '32px',
-          borderTop: '1px solid var(--color-border)'
+          borderTop: '1px solid var(--color-hairline)'
         }}>
           <Link
             href="/"
             style={{
               fontFamily: 'var(--font-sans)',
-              fontWeight: '600',
+              fontWeight: '400',
               fontSize: '14px',
-              color: 'var(--color-text-muted)',
+              color: 'var(--color-text-main)',
+              textDecoration: 'underline',
+              textUnderlineOffset: '4px',
               transition: 'color 0.2s ease'
             }}
           >

@@ -52,7 +52,7 @@ export default function SearchBar({ onSearch, placeholder = "글 검색..." }) {
             </div>
             <style jsx>{`
                 .search-bar {
-                    margin-bottom: 32px;
+                    margin-bottom: 40px;
                 }
                 .search-input-wrapper {
                     position: relative;
@@ -60,7 +60,7 @@ export default function SearchBar({ onSearch, placeholder = "글 검색..." }) {
                 }
                 .search-icon {
                     position: absolute;
-                    left: 16px;
+                    left: 0;
                     top: 50%;
                     transform: translateY(-50%);
                     color: var(--color-text-light);
@@ -68,26 +68,27 @@ export default function SearchBar({ onSearch, placeholder = "글 검색..." }) {
                 }
                 .search-input {
                     width: 100%;
-                    padding: 14px 44px;
+                    padding: 12px 32px;
                     font-family: var(--font-sans);
                     font-size: 15px;
-                    border: 1px solid var(--color-border);
-                    border-radius: 50px;
-                    background: var(--color-background);
+                    font-weight: 400;
+                    border: none;
+                    border-bottom: 1px solid var(--color-text-main);
+                    border-radius: 0;
+                    background: transparent;
                     color: var(--color-text-main);
                     transition: all 0.2s ease;
                 }
                 .search-input:focus {
                     outline: none;
-                    border-color: var(--color-primary);
-                    box-shadow: 0 0 0 3px rgba(26, 137, 23, 0.1);
+                    border-bottom-width: 2px;
                 }
                 .search-input::placeholder {
                     color: var(--color-text-light);
                 }
                 .search-clear {
                     position: absolute;
-                    right: 12px;
+                    right: 0;
                     top: 50%;
                     transform: translateY(-50%);
                     width: 24px;
@@ -95,17 +96,16 @@ export default function SearchBar({ onSearch, placeholder = "글 검색..." }) {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: var(--color-surface);
+                    background: none;
                     border: none;
-                    border-radius: 50%;
-                    color: var(--color-text-muted);
+                    border-radius: 0;
+                    color: var(--color-text-main);
                     font-size: 18px;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: opacity 0.2s ease;
                 }
                 .search-clear:hover {
-                    background: var(--color-border);
-                    color: var(--color-text-main);
+                    opacity: 0.6;
                 }
             `}</style>
         </div>

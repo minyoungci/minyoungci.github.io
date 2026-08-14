@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Brief from '@/components/Brief';
 import FloatingSubscribe from '@/components/FloatingSubscribe';
 import { supabase } from '@/lib/supabase';
+import { SAMPLE_POSTS } from '@/lib/samplePosts';
 
 const categoryDescriptions = {
     'Trend': 'The latest developments and emerging trends in technology and AI.',
@@ -24,10 +25,12 @@ export default function SectionClient({ category }) {
             setLoading(true);
             setError(null);
 
-            // Check if supabase client is available
+            const sampleFallback = SAMPLE_POSTS.filter(
+                (post) => post.tag === decodeURIComponent(category)
+            );
+
             if (!supabase) {
-                console.error("Supabase client not available");
-                setError("데이터베이스 연결을 사용할 수 없습니다.");
+                setFilteredPosts(sampleFallback);
                 setLoading(false);
                 return;
             }
@@ -39,15 +42,15 @@ export default function SectionClient({ category }) {
                     .eq('tag', category)
                     .order('date', { ascending: false });
 
-                if (fetchError) {
-                    console.error("Error fetching section posts:", fetchError);
-                    setError("글을 불러오는데 실패했습니다.");
+                if (fetchError || !data || data.length === 0) {
+                    if (fetchError) console.warn("Supabase unavailable, showing sample posts:", fetchError.message);
+                    setFilteredPosts(sampleFallback);
                 } else {
-                    setFilteredPosts(data || []);
+                    setFilteredPosts(data);
                 }
             } catch (err) {
-                console.error("Unexpected error:", err);
-                setError("예상치 못한 오류가 발생했습니다.");
+                console.warn("Supabase unavailable, showing sample posts:", err?.message || err);
+                setFilteredPosts(sampleFallback);
             }
 
             setLoading(false);
@@ -63,22 +66,9 @@ export default function SectionClient({ category }) {
     return (
         <>
             <main className="container posts-section">
-                <header className="animate-fade-in" style={{ marginBottom: '48px' }}>
-                    <h1 style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: '2.5rem',
-                        fontWeight: '800',
-                        marginBottom: '12px',
-                        color: 'var(--color-text-main)'
-                    }}>
-                        {decodedCategory}
-                    </h1>
-                    <p style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: '18px',
-                        color: 'var(--color-text-muted)',
-                        maxWidth: '600px'
-                    }}>
+                <header className="masthead animate-fade-in">
+                    <h1 className="masthead-title">{decodedCategory}</h1>
+                    <p className="masthead-sub">
                         {categoryDescriptions[decodedCategory] || `Articles tagged with ${decodedCategory}`}
                     </p>
                 </header>
@@ -93,7 +83,7 @@ export default function SectionClient({ category }) {
                         <p className="empty-state-text">{error}</p>
                     </div>
                 ) : filteredPosts.length > 0 ? (
-                    <div className="posts-grid animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                    <div className="gallery-grid animate-fade-in" style={{ animationDelay: '0.2s' }}>
                         {filteredPosts.map((post) => (
                             <Brief
                                 key={post.id}
@@ -103,6 +93,7 @@ export default function SectionClient({ category }) {
                                 image={post.image}
                                 slug={post.id}
                                 date={post.date}
+                                grid={true}
                             />
                         ))}
                     </div>

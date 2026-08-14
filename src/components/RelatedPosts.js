@@ -5,12 +5,11 @@ export default function RelatedPosts({ posts }) {
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        const d = new Date(dateString);
+        const day = d.getDate();
+        const month = d.toLocaleDateString('en-US', { month: 'short' });
+        const year = d.getFullYear();
+        return `${day} ${month} ${year}`;
     };
 
     return (
@@ -21,62 +20,30 @@ export default function RelatedPosts({ posts }) {
                     <Link
                         key={post.id}
                         href={`/${post.id}`}
-                        style={{
-                            display: 'block',
-                            padding: '24px',
-                            background: 'var(--color-surface)',
-                            borderRadius: 'var(--border-radius)',
-                            transition: 'all 0.2s ease',
-                            textDecoration: 'none'
-                        }}
+                        className="gallery-card-link gallery-card"
+                        style={{ display: 'block', textDecoration: 'none' }}
                     >
-                        {post.image && (
-                            <div style={{
-                                marginBottom: '16px',
-                                borderRadius: '6px',
-                                overflow: 'hidden',
-                                height: '140px'
-                            }}>
+                        <div className="gallery-card-media" style={{ aspectRatio: '16 / 10', marginBottom: '12px' }}>
+                            {post.image ? (
                                 <img
                                     src={post.image}
                                     alt={post.title}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover'
-                                    }}
+                                    className="gallery-card-image"
+                                    loading="lazy"
                                 />
-                            </div>
-                        )}
-                        <span style={{
-                            display: 'inline-block',
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: '11px',
-                            fontWeight: '600',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.1em',
-                            color: 'var(--color-text-muted)',
-                            marginBottom: '8px'
-                        }}>
-                            {post.tag}
+                            ) : (
+                                <div className="gallery-card-placeholder">
+                                    <span className="gallery-card-watermark">{post.tag || 'Article'}</span>
+                                </div>
+                            )}
+                        </div>
+                        <span className="gallery-card-meta">
+                            <span className="arrow">↗</span>
+                            {[post.tag, formatDate(post.date)].filter(Boolean).join(', ')}
                         </span>
-                        <h4 style={{
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: '16px',
-                            fontWeight: '700',
-                            lineHeight: '1.4',
-                            color: 'var(--color-text-main)',
-                            marginBottom: '8px'
-                        }}>
+                        <h4 className="gallery-card-title" style={{ fontSize: '19px' }}>
                             {post.title}
                         </h4>
-                        <span style={{
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: '13px',
-                            color: 'var(--color-text-muted)'
-                        }}>
-                            {formatDate(post.date)}
-                        </span>
                     </Link>
                 ))}
             </div>

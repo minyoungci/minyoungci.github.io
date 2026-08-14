@@ -49,13 +49,13 @@ export default function NetworkBackground() {
             const theme = document.documentElement.getAttribute('data-theme');
             if (theme === 'dark') {
                 return {
-                    node: 'rgba(34, 197, 94, 0.25)',
-                    lineBase: [34, 197, 94]
+                    node: 'rgba(255, 255, 255, 0.06)',
+                    lineBase: [255, 255, 255]
                 };
             }
             return {
-                node: 'rgba(26, 137, 23, 0.15)',
-                lineBase: [26, 137, 23]
+                node: 'rgba(0, 0, 0, 0.04)',
+                lineBase: [0, 0, 0]
             };
         };
 
@@ -99,7 +99,7 @@ export default function NetworkBackground() {
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
                     if (distance < connectionDistance) {
-                        const opacity = (1 - distance / connectionDistance) * 0.15;
+                        const opacity = (1 - distance / connectionDistance) * 0.05;
                         const [r, g, b] = colors.lineBase;
                         ctx.beginPath();
                         ctx.moveTo(node.x, node.y);

@@ -7,6 +7,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
 import { supabase } from '@/lib/supabase';
+import { SAMPLE_POSTS, getSamplePostById } from '@/lib/samplePosts';
 
 const postsDirectory = path.join(process.cwd(), 'posts');
 
@@ -41,6 +42,7 @@ export async function getSortedPostsData() {
     }
 
     // 2. Fetch Supabase Posts
+    let supabaseOk = false;
     if (supabase) {
         try {
             const { data, error } = await supabase
@@ -48,15 +50,18 @@ export async function getSortedPostsData() {
                 .select('id, date, title, tag, summary, image');
 
             if (data && !error) {
-                // Merge strategies: IDs must be unique. DB overrides Local? 
-                // For now, just concat. Or simpler: filter out duplicates if needed.
-                // Assuming distinct IDs for now or letting DB win.
-                // Let's just push them.
+                supabaseOk = data.length > 0;
                 posts = [...posts, ...data];
             }
         } catch (e) {
-            console.error("Supabase posts error:", e);
+            console.warn("Supabase unavailable, using sample posts:", e?.message || e);
         }
+    }
+
+    // 3. Fallback: sample posts keep the site populated until Supabase has real posts
+    if (!supabaseOk) {
+        const existingIds = new Set(posts.map((post) => post.id));
+        posts = [...posts, ...SAMPLE_POSTS.filter((post) => !existingIds.has(post.id))];
     }
 
     // Sort by date
@@ -81,12 +86,20 @@ export async function getAllPostIds() {
 
     // Supabase
     if (supabase) {
-        const { data } = await supabase.from('posts').select('id');
-        if (data) {
-            const dbIds = data.map(post => ({ slug: post.id }));
-            ids = [...ids, ...dbIds];
+        try {
+            const { data } = await supabase.from('posts').select('id');
+            if (data) {
+                const dbIds = data.map(post => ({ slug: post.id }));
+                ids = [...ids, ...dbIds];
+            }
+        } catch (e) {
+            console.warn("Supabase unavailable for post ids:", e?.message || e);
         }
     }
+
+    // Sample post ids (deduplicated)
+    const existing = new Set(ids.map((entry) => entry.slug));
+    ids = [...ids, ...SAMPLE_POSTS.filter((post) => !existing.has(post.id)).map((post) => ({ slug: post.id }))];
 
     return ids;
 }
@@ -122,7 +135,7 @@ export async function getPostData(id) {
                 };
             }
         } catch (e) {
-            console.error("Supabase getPostData error:", e);
+            console.warn("Supabase unavailable for post data:", e?.message || e);
         }
     }
 
@@ -149,6 +162,22 @@ export async function getPostData(id) {
         }
     } catch (e) {
         console.error("Local getPostData error:", e);
+    }
+
+    // Fallback to sample posts
+    const samplePost = getSamplePostById(id);
+    if (samplePost) {
+        const processedContent = await unified()
+            .use(remarkParse)
+            .use(remarkRehype, { allowDangerousHtml: true })
+            .use(rehypeRaw)
+            .use(rehypeStringify, { allowDangerousHtml: true })
+            .process(samplePost.content || '');
+
+        return {
+            ...samplePost,
+            contentHtml: processedContent.toString()
+        };
     }
 
     return null;

@@ -87,10 +87,7 @@ export default function RootLayout({ children }) {
   const themeInitScript = `
     (function() {
       try {
-        var theme = localStorage.getItem('theme');
-        if (!theme) {
-          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
+        var theme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', theme);
       } catch (e) {}
     })();
@@ -99,6 +96,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko" suppressHydrationWarning={true}>
       <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"
+        />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"

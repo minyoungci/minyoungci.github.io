@@ -1,171 +1,132 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
 import Brief from '@/components/Brief';
 import FloatingSubscribe from '@/components/FloatingSubscribe';
 import SearchBar from '@/components/SearchBar';
 import { supabase } from '@/lib/supabase';
+import { SAMPLE_POSTS } from '@/lib/samplePosts';
+
+const categories = ['Trend', 'Research', 'Series', 'Life'];
 
 export default function Home() {
-  const [allPostsData, setAllPostsData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+    const [allPostsData, setAllPostsData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
 
-  useEffect(() => {
-    async function fetchPosts() {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .order('date', { ascending: false });
+    useEffect(() => {
+        async function fetchPosts() {
+            try {
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .order('date', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching posts:', error);
-      } else {
-        setAllPostsData(data || []);
-      }
-      setLoading(false);
-    }
+                if (error || !data || data.length === 0) {
+                    if (error) console.warn('Supabase unavailable, showing sample posts:', error.message);
+                    setAllPostsData(SAMPLE_POSTS);
+                } else {
+                    setAllPostsData(data);
+                }
+            } catch (err) {
+                console.warn('Supabase unavailable, showing sample posts:', err?.message || err);
+                setAllPostsData(SAMPLE_POSTS);
+            }
+            setLoading(false);
+        }
 
-    fetchPosts();
-  }, []);
+        fetchPosts();
+    }, []);
 
-  // Filter posts based on search query
-  const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) return allPostsData;
-    const query = searchQuery.toLowerCase();
-    return allPostsData.filter(post =>
-      post.title?.toLowerCase().includes(query) ||
-      post.summary?.toLowerCase().includes(query) ||
-      post.tag?.toLowerCase().includes(query)
-    );
-  }, [allPostsData, searchQuery]);
+    // Filter posts by search query, then by active category
+    const filteredPosts = useMemo(() => {
+        let posts = allPostsData;
 
-  const featuredPost = searchQuery ? null : allPostsData[0];
-  const remainingPosts = searchQuery ? filteredPosts : allPostsData.slice(1);
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            posts = posts.filter((post) =>
+                post.title?.toLowerCase().includes(query) ||
+                post.summary?.toLowerCase().includes(query) ||
+                post.tag?.toLowerCase().includes(query)
+            );
+        }
 
-  // Group posts by category
-  const categories = ['Trend', 'Research', 'Series', 'Life'];
-  const postsByCategory = categories.reduce((acc, category) => {
-    acc[category] = remainingPosts.filter(post => post.tag === category);
-    return acc;
-  }, {});
+        if (activeCategory !== 'All') {
+            posts = posts.filter((post) => post.tag === activeCategory);
+        }
 
-  return (
-    <>
-      <main className="container posts-section">
-        {/* Search Bar */}
-        <SearchBar onSearch={setSearchQuery} placeholder="제목, 내용, 카테고리 검색..." />
+        return posts;
+    }, [allPostsData, searchQuery, activeCategory]);
 
-        {loading ? (
-          <div className="loading-state">
-            글을 불러오는 중...
-          </div>
-        ) : allPostsData.length > 0 ? (
-          <section className="animate-fade-in">
-            {/* Search Results */}
-            {searchQuery ? (
-              <div className="search-results">
-                <div className="category-header">
-                  <h2 className="category-title">
-                    검색 결과 ({filteredPosts.length}건)
-                  </h2>
-                  {filteredPosts.length > 0 && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="category-link"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                    >
-                      검색 초기화
-                    </button>
-                  )}
-                </div>
-                {filteredPosts.length > 0 ? (
-                  <div className="posts-grid-3">
-                    {filteredPosts.map((post) => (
-                      <Brief
-                        key={post.id}
-                        title={post.title}
-                        tag={post.tag}
-                        summary={post.summary}
-                        image={post.image}
-                        slug={post.id}
-                        date={post.date}
-                        featured={false}
-                        grid={true}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="empty-state">
-                    <div className="empty-state-icon">🔍</div>
-                    <p className="empty-state-text">
-                      "{searchQuery}"에 대한 검색 결과가 없습니다.
+    const countFor = (category) => {
+        if (category === 'All') return allPostsData.length;
+        return allPostsData.filter((post) => post.tag === category).length;
+    };
+
+    // Featured treatment only on the untouched front page view
+    const showFeatured = !searchQuery && activeCategory === 'All';
+
+    return (
+        <>
+            <main className="container posts-section">
+                {/* Masthead */}
+                <header className="masthead animate-fade-in">
+                    <h1 className="masthead-title">The Gradient</h1>
+                    <p className="masthead-sub">
+                        기술 트렌드, 연구, 그리고 일상. AI와 머신러닝을 중심으로 기록하는 아카이브.
                     </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                {/* Featured Post */}
-                {featuredPost && (
-                  <div className="featured-post">
-                    <Brief
-                      key={featuredPost.id}
-                      title={featuredPost.title}
-                      tag={featuredPost.tag}
-                      summary={featuredPost.summary}
-                      image={featuredPost.image}
-                      slug={featuredPost.id}
-                      date={featuredPost.date}
-                      featured={true}
-                    />
-                  </div>
-                )}
+                </header>
 
-                {/* Posts by Category */}
-                {categories.map(category => {
-                  const posts = postsByCategory[category];
-                  if (!posts || posts.length === 0) return null;
+                {/* Search */}
+                <SearchBar onSearch={setSearchQuery} placeholder="제목, 내용, 카테고리 검색..." />
 
-                  return (
-                    <div key={category} className="category-section">
-                      <div className="category-header">
-                        <h2 className="category-title">{category}</h2>
-                        <Link href={`/section/${category}/`} className="category-link">
-                          모두 보기 →
-                        </Link>
-                      </div>
-                      <div className="posts-grid-3">
-                        {posts.slice(0, 6).map((post) => (
-                          <Brief
-                            key={post.id}
-                            title={post.title}
-                            tag={post.tag}
-                            summary={post.summary}
-                            image={post.image}
-                            slug={post.id}
-                            date={post.date}
-                            featured={false}
-                            grid={true}
-                          />
+                {/* Category Filter */}
+                <nav className="filter-row" aria-label="Categories">
+                    {['All', ...categories].map((category) => (
+                        <button
+                            key={category}
+                            className={`filter-link${activeCategory === category ? ' active' : ''}`}
+                            onClick={() => setActiveCategory(category)}
+                        >
+                            {category}
+                            <sup className="filter-count">{countFor(category)}</sup>
+                        </button>
+                    ))}
+                </nav>
+
+                {loading ? (
+                    <div className="loading-state">글을 불러오는 중...</div>
+                ) : filteredPosts.length > 0 ? (
+                    <section className="gallery-grid animate-fade-in">
+                        {filteredPosts.map((post, index) => (
+                            <Brief
+                                key={post.id}
+                                title={post.title}
+                                tag={post.tag}
+                                summary={post.summary}
+                                image={post.image}
+                                slug={post.id}
+                                date={post.date}
+                                featured={showFeatured && index === 0}
+                                grid={true}
+                            />
                         ))}
-                      </div>
+                    </section>
+                ) : searchQuery ? (
+                    <div className="empty-state">
+                        <p className="empty-state-text">
+                            "{searchQuery}"에 대한 검색 결과가 없습니다.
+                        </p>
                     </div>
-                  );
-                })}
-              </>
-            )}
-          </section>
-        ) : (
-          <div className="empty-state">
-            <div className="empty-state-icon">📝</div>
-            <p className="empty-state-text">아직 작성된 글이 없습니다.</p>
-          </div>
-        )}
-      </main>
+                ) : (
+                    <div className="empty-state">
+                        <p className="empty-state-text">아직 작성된 글이 없습니다.</p>
+                    </div>
+                )}
+            </main>
 
-      <FloatingSubscribe />
-    </>
-  );
+            <FloatingSubscribe />
+        </>
+    );
 }

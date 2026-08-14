@@ -23,7 +23,7 @@ export default function ViewCount({ postId }) {
                     .single();
 
                 if (error) {
-                    console.error('Error fetching views:', error);
+                    // Supabase unavailable or views column missing — hide the counter
                     return;
                 }
 
@@ -43,7 +43,7 @@ export default function ViewCount({ postId }) {
                     }
                 }
             } catch (err) {
-                console.error('Error updating views:', err);
+                // Supabase unavailable — hide the counter
             }
         };
 
@@ -51,7 +51,6 @@ export default function ViewCount({ postId }) {
     }, [postId]);
 
     const formatViews = (count) => {
-        if (count === null) return '...';
         if (count >= 1000000) {
             return `${(count / 1000000).toFixed(1)}M`;
         }
@@ -61,8 +60,11 @@ export default function ViewCount({ postId }) {
         return count.toString();
     };
 
+    if (views === null) return null;
+
     return (
         <span className="view-count" title={`${views || 0} views`}>
+            <span style={{ opacity: 0.5, marginRight: '12px' }}>•</span>
             <svg
                 width="16"
                 height="16"

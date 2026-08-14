@@ -5,6 +5,7 @@ export const dynamic = 'force-static';
 import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { SAMPLE_POSTS, getSamplePostById } from '@/lib/samplePosts';
 import { remark } from 'remark';
 import html from 'remark-html';
 import remarkMath from 'remark-math';
@@ -24,6 +25,8 @@ function AdminContent() {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState('');
+    const [loginError, setLoginError] = useState('');
+    const [supabaseDown, setSupabaseDown] = useState(false);
 
     // Editor State
     const [previewHtml, setPreviewHtml] = useState('');
@@ -123,31 +126,34 @@ function AdminContent() {
         setLastSaved(null);
     };
 
-    // Fetch Posts
+    // Fetch Posts — falls back to sample posts when Supabase is unavailable
     const fetchPostsList = async () => {
+        const sampleList = SAMPLE_POSTS.map(({ id, title, date, tag, summary }) => ({ id, title, date, tag, summary }));
+
         try {
             const { data, error } = await supabase
                 .from('posts')
                 .select('id, title, date, tag, summary')
                 .order('date', { ascending: false });
             if (error) throw error;
-            setPostsList(data || []);
+
+            if (!data || data.length === 0) {
+                setPostsList(sampleList);
+                setSupabaseDown(true);
+            } else {
+                setPostsList(data);
+                setSupabaseDown(false);
+            }
         } catch (error) {
-            console.error('Error fetching posts:', error);
+            console.warn('Supabase unavailable, showing sample posts:', error?.message || error);
+            setPostsList(sampleList);
+            setSupabaseDown(true);
         }
     };
 
-    // Load post for editing
+    // Load post for editing — sample posts open locally when Supabase is unavailable
     const handleEditPost = async (postId) => {
-        try {
-            const { data, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('id', postId)
-                .single();
-
-            if (error) throw error;
-
+        const loadIntoForm = (data) => {
             setFormData({
                 title: data.title || '',
                 slug: data.id || '',
@@ -158,11 +164,30 @@ function AdminContent() {
             });
             setIsEditMode(true);
             setEditingPostId(postId);
-            setMessage('');
             setStatus('idle');
+        };
+
+        try {
+            const { data, error } = await supabase
+                .from('posts')
+                .select('*')
+                .eq('id', postId)
+                .single();
+
+            if (error) throw error;
+
+            loadIntoForm(data);
+            setMessage('');
         } catch (error) {
-            console.error('Error loading post:', error);
-            alert('Failed to load post: ' + error.message);
+            const samplePost = getSamplePostById(postId);
+            if (samplePost) {
+                loadIntoForm(samplePost);
+                setMessage('샘플 글 — 저장하려면 Supabase 연결이 필요합니다');
+                return;
+            }
+            console.warn('Error loading post:', error?.message || error);
+            setStatus('error');
+            setMessage('Failed to load post: ' + error.message);
         }
     };
 
@@ -200,8 +225,10 @@ function AdminContent() {
             }
             setMessage('Post deleted');
         } catch (error) {
-            console.error('Error deleting post:', error);
-            alert('Failed: ' + error.message);
+            console.warn('Error deleting post:', error?.message || error);
+            setDeleteConfirm(null);
+            setStatus('error');
+            setMessage(supabaseDown ? '샘플 글은 삭제할 수 없습니다 — Supabase 연결이 필요합니다' : 'Failed: ' + error.message);
         }
     };
 
@@ -229,8 +256,9 @@ function AdminContent() {
         e.preventDefault();
         if (password === 'rlaalsdud12') {
             setIsAuthenticated(true);
+            setLoginError('');
         } else {
-            alert('Incorrect password');
+            setLoginError('Incorrect password');
         }
     };
 
@@ -252,7 +280,7 @@ function AdminContent() {
 
             setImages(loadedImages);
         } catch (error) {
-            console.error('Error fetching images:', error);
+            console.warn('Supabase storage unavailable (images):', error?.message || error);
         }
     };
 
@@ -339,7 +367,7 @@ function AdminContent() {
         if (videoFiles.length > 0) {
             const urls = await handleVideoUpload(videoFiles);
             if (urls.length > 0) {
-                const videoTags = urls.map(url => `<video controls width="100%" style="max-width: 800px; border-radius: 8px;">
+                const videoTags = urls.map(url => `<video controls width="100%" style="max-width: 800px;">
   <source src="${url}" type="video/mp4">
 </video>`).join('\n\n');
                 insertAtCursor(videoTags);
@@ -388,8 +416,10 @@ function AdminContent() {
             setDeleteConfirm(null);
             setMessage('Image deleted.');
         } catch (error) {
-            console.error('Delete Error:', error);
-            alert('Failed: ' + error.message);
+            console.warn('Delete Error:', error?.message || error);
+            setDeleteConfirm(null);
+            setStatus('error');
+            setMessage('Failed to delete image: ' + error.message);
         }
     };
 
@@ -411,7 +441,7 @@ function AdminContent() {
 
             setVideos(loadedVideos);
         } catch (error) {
-            console.error('Error fetching videos:', error);
+            console.warn('Supabase storage unavailable (videos):', error?.message || error);
         }
     };
 
@@ -478,13 +508,15 @@ function AdminContent() {
             setDeleteConfirm(null);
             setMessage('Video deleted.');
         } catch (error) {
-            console.error('Delete Error:', error);
-            alert('Failed: ' + error.message);
+            console.warn('Delete Error:', error?.message || error);
+            setDeleteConfirm(null);
+            setStatus('error');
+            setMessage('Failed to delete video: ' + error.message);
         }
     };
 
     const insertVideoToContent = (url) => {
-        const videoTag = `<video controls width="100%" style="max-width: 800px; border-radius: 8px;">
+        const videoTag = `<video controls width="100%" style="max-width: 800px;">
   <source src="${url}" type="video/mp4">
   Your browser does not support the video tag.
 </video>`;
@@ -781,9 +813,11 @@ Summarize key takeaways and suggest next steps or further reading.
             }
             setHasUnsavedChanges(false);
         } catch (error) {
-            console.error('Error:', error);
+            console.warn('Error:', error?.message || error);
             setStatus('error');
-            setMessage(`Error: ${error.message}`);
+            setMessage(supabaseDown
+                ? '저장 실패 — Supabase 연결이 필요합니다 (src/lib/supabase.js 설정 확인)'
+                : `Error: ${error.message}`);
         }
     };
 
@@ -806,10 +840,10 @@ Summarize key takeaways and suggest next steps or further reading.
                 padding: '24px'
             }}>
                 <form onSubmit={handleLogin} style={{
-                    textAlign: 'center',
+                    textAlign: 'left',
                     padding: '48px',
-                    background: 'var(--color-surface)',
-                    borderRadius: '12px',
+                    background: 'var(--color-background)',
+                    borderRadius: '0',
                     border: '1px solid var(--color-border)',
                     maxWidth: '400px',
                     width: '100%'
@@ -817,11 +851,12 @@ Summarize key takeaways and suggest next steps or further reading.
                     <h1 style={{
                         fontFamily: 'var(--font-sans)',
                         fontSize: '24px',
-                        fontWeight: '700',
+                        fontWeight: '400',
+                        letterSpacing: '-0.02em',
                         marginBottom: '8px',
                         color: 'var(--color-text-main)'
                     }}>
-                        Admin Panel
+                        ↗ Write
                     </h1>
                     <p style={{
                         fontFamily: 'var(--font-sans)',
@@ -839,7 +874,7 @@ Summarize key takeaways and suggest next steps or further reading.
                         style={{
                             width: '100%',
                             padding: '14px 18px',
-                            borderRadius: '8px',
+                            borderRadius: '0',
                             border: '1px solid var(--color-border)',
                             marginBottom: '16px',
                             background: 'var(--color-background)',
@@ -848,16 +883,26 @@ Summarize key takeaways and suggest next steps or further reading.
                             fontSize: '16px'
                         }}
                     />
+                    {loginError && (
+                        <p style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '13px',
+                            color: 'var(--color-text-muted)',
+                            margin: '0 0 16px'
+                        }}>
+                            {loginError}
+                        </p>
+                    )}
                     <button type="submit" style={{
                         width: '100%',
                         padding: '14px',
                         background: 'var(--color-primary)',
                         color: 'var(--color-background)',
-                        border: 'none',
-                        borderRadius: '8px',
+                        border: '1px solid var(--color-primary)',
+                        borderRadius: '0',
                         fontFamily: 'var(--font-sans)',
                         fontSize: '16px',
-                        fontWeight: '600',
+                        fontWeight: '400',
                         cursor: 'pointer'
                     }}>
                         Login
@@ -869,7 +914,7 @@ Summarize key takeaways and suggest next steps or further reading.
 
     return (
         <div
-            style={{ display: 'flex', height: 'calc(100vh - 70px)', overflow: 'hidden' }}
+            style={{ display: 'flex', height: 'calc(100vh - 56px)', overflow: 'hidden' }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -879,7 +924,7 @@ Summarize key takeaways and suggest next steps or further reading.
                 <div style={{
                     position: 'fixed',
                     inset: 0,
-                    background: 'rgba(26, 137, 23, 0.1)',
+                    background: 'rgba(0, 0, 0, 0.06)',
                     border: '3px dashed var(--color-primary)',
                     zIndex: 1000,
                     display: 'flex',
@@ -890,7 +935,7 @@ Summarize key takeaways and suggest next steps or further reading.
                     <div style={{
                         background: 'var(--color-surface)',
                         padding: '32px 48px',
-                        borderRadius: '12px',
+                        borderRadius: '0',
                         boxShadow: 'var(--shadow-lg)',
                         textAlign: 'center'
                     }}>
@@ -981,7 +1026,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     width: '100%',
                                     padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '6px',
+                                    borderRadius: '0',
                                     fontSize: '13px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
@@ -1000,7 +1045,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     background: isEditMode ? 'var(--color-background)' : 'var(--color-primary)',
                                     color: isEditMode ? 'var(--color-text-main)' : 'var(--color-background)',
                                     border: isEditMode ? '1px solid var(--color-border)' : 'none',
-                                    borderRadius: '6px',
+                                    borderRadius: '0',
                                     cursor: 'pointer',
                                     fontFamily: 'var(--font-sans)',
                                     fontWeight: '600',
@@ -1026,7 +1071,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                                 padding: '10px 12px',
                                                 background: editingPostId === post.id ? 'var(--color-primary)' : 'var(--color-background)',
                                                 border: '1px solid var(--color-border)',
-                                                borderRadius: '6px',
+                                                borderRadius: '0',
                                                 cursor: 'pointer'
                                             }}
                                             onClick={() => handleEditPost(post.id)}
@@ -1061,10 +1106,10 @@ Summarize key takeaways and suggest next steps or further reading.
                                                     }}
                                                     style={{
                                                         padding: '2px 8px',
-                                                        background: deleteConfirm === post.id ? '#dc3545' : 'transparent',
-                                                        color: deleteConfirm === post.id ? '#fff' : '#dc3545',
-                                                        border: deleteConfirm === post.id ? 'none' : '1px solid #dc3545',
-                                                        borderRadius: '3px',
+                                                        background: deleteConfirm === post.id ? 'var(--color-text-main)' : 'transparent',
+                                                        color: deleteConfirm === post.id ? 'var(--color-background)' : 'var(--color-text-muted)',
+                                                        border: '1px solid var(--color-border)',
+                                                        borderRadius: '0',
                                                         cursor: 'pointer',
                                                         fontSize: '10px',
                                                         fontWeight: '600'
@@ -1111,7 +1156,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                 padding: '10px',
                                 background: 'var(--color-primary)',
                                 color: 'var(--color-background)',
-                                borderRadius: '6px',
+                                borderRadius: '0',
                                 cursor: 'pointer',
                                 fontFamily: 'var(--font-sans)',
                                 fontWeight: '600',
@@ -1129,7 +1174,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                 {images.map((img) => (
                                     <div key={img.name} style={{
                                         border: '1px solid var(--color-border)',
-                                        borderRadius: '6px',
+                                        borderRadius: '0',
                                         overflow: 'hidden',
                                         background: 'var(--color-background)'
                                     }}>
@@ -1159,11 +1204,11 @@ Summarize key takeaways and suggest next steps or further reading.
                                                 style={{
                                                     flex: 1,
                                                     padding: '6px',
-                                                    background: deleteConfirm === img.name ? '#dc3545' : 'transparent',
+                                                    background: deleteConfirm === img.name ? 'var(--color-text-main)' : 'transparent',
                                                     border: 'none',
                                                     cursor: 'pointer',
                                                     fontSize: '10px',
-                                                    color: deleteConfirm === img.name ? '#fff' : 'var(--color-text-muted)'
+                                                    color: deleteConfirm === img.name ? 'var(--color-background)' : 'var(--color-text-muted)'
                                                 }}
                                             >
                                                 {deleteConfirm === img.name ? 'Confirm' : 'Del'}
@@ -1204,9 +1249,9 @@ Summarize key takeaways and suggest next steps or further reading.
                                 display: 'block',
                                 textAlign: 'center',
                                 padding: '10px',
-                                background: '#6366f1',
-                                color: '#fff',
-                                borderRadius: '6px',
+                                background: 'var(--color-text-main)',
+                                color: 'var(--color-background)',
+                                borderRadius: '0',
                                 cursor: 'pointer',
                                 fontFamily: 'var(--font-sans)',
                                 fontWeight: '600',
@@ -1233,7 +1278,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                 {videos.map((vid) => (
                                     <div key={vid.name} style={{
                                         border: '1px solid var(--color-border)',
-                                        borderRadius: '6px',
+                                        borderRadius: '0',
                                         overflow: 'hidden',
                                         background: 'var(--color-background)'
                                     }}>
@@ -1281,11 +1326,11 @@ Summarize key takeaways and suggest next steps or further reading.
                                                 style={{
                                                     flex: 1,
                                                     padding: '6px',
-                                                    background: deleteConfirm === `video_${vid.name}` ? '#dc3545' : 'transparent',
+                                                    background: deleteConfirm === `video_${vid.name}` ? 'var(--color-text-main)' : 'transparent',
                                                     border: 'none',
                                                     cursor: 'pointer',
                                                     fontSize: '10px',
-                                                    color: deleteConfirm === `video_${vid.name}` ? '#fff' : 'var(--color-text-muted)'
+                                                    color: deleteConfirm === `video_${vid.name}` ? 'var(--color-background)' : 'var(--color-text-muted)'
                                                 }}
                                             >
                                                 {deleteConfirm === `video_${vid.name}` ? 'Confirm' : 'Del'}
@@ -1335,7 +1380,7 @@ Summarize key takeaways and suggest next steps or further reading.
                             style={{
                                 background: 'var(--color-surface)',
                                 border: '1px solid var(--color-border)',
-                                borderRadius: '4px',
+                                borderRadius: '0',
                                 padding: '6px 10px',
                                 cursor: 'pointer',
                                 fontSize: '12px',
@@ -1359,9 +1404,20 @@ Summarize key takeaways and suggest next steps or further reading.
                                 color: 'var(--color-text-muted)',
                                 background: 'var(--color-surface)',
                                 padding: '4px 8px',
-                                borderRadius: '4px'
+                                borderRadius: '0'
                             }}>
                                 /{editingPostId}/
+                            </span>
+                        )}
+                        {supabaseDown && (
+                            <span style={{
+                                fontFamily: 'var(--font-sans)',
+                                fontSize: '12px',
+                                color: 'var(--color-text-muted)',
+                                border: '1px solid var(--color-border)',
+                                padding: '4px 10px'
+                            }}>
+                                Supabase 미연결 — 샘플 데이터 표시 중, 저장 불가
                             </span>
                         )}
                     </div>
@@ -1380,7 +1436,7 @@ Summarize key takeaways and suggest next steps or further reading.
                             <span style={{
                                 fontFamily: 'var(--font-sans)',
                                 fontSize: '13px',
-                                color: status === 'error' ? '#dc3545' : '#28a745'
+                                color: 'var(--color-text-main)'
                             }}>
                                 {message}
                             </span>
@@ -1393,7 +1449,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     background: 'transparent',
                                     color: 'var(--color-text-muted)',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '4px',
+                                    borderRadius: '0',
                                     fontFamily: 'var(--font-sans)',
                                     fontSize: '13px',
                                     cursor: 'pointer'
@@ -1410,7 +1466,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                 background: 'var(--color-primary)',
                                 color: 'var(--color-background)',
                                 border: 'none',
-                                borderRadius: '4px',
+                                borderRadius: '0',
                                 fontFamily: 'var(--font-sans)',
                                 fontSize: '13px',
                                 fontWeight: '600',
@@ -1439,7 +1495,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     width: '100%',
                                     padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '4px',
+                                    borderRadius: '0',
                                     fontSize: '14px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
@@ -1460,7 +1516,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     width: '100%',
                                     padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '4px',
+                                    borderRadius: '0',
                                     fontSize: '13px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
@@ -1480,7 +1536,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     width: '100%',
                                     padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '4px',
+                                    borderRadius: '0',
                                     fontSize: '13px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
@@ -1507,7 +1563,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                     width: '100%',
                                     padding: '10px 12px',
                                     border: '1px solid var(--color-border)',
-                                    borderRadius: '4px',
+                                    borderRadius: '0',
                                     fontSize: '13px',
                                     fontFamily: 'var(--font-sans)',
                                     background: 'var(--color-background)',
@@ -1529,7 +1585,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                         flex: 1,
                                         padding: '10px 12px',
                                         border: '1px solid var(--color-border)',
-                                        borderRadius: '4px',
+                                        borderRadius: '0',
                                         fontSize: '13px',
                                         fontFamily: 'var(--font-sans)',
                                         background: 'var(--color-background)',
@@ -1543,7 +1599,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                         style={{
                                             width: '38px',
                                             height: '38px',
-                                            borderRadius: '4px',
+                                            borderRadius: '0',
                                             objectFit: 'cover',
                                             border: '1px solid var(--color-border)'
                                         }}
@@ -1590,7 +1646,7 @@ Summarize key takeaways and suggest next steps or further reading.
                                 padding: '5px 10px',
                                 background: 'var(--color-background)',
                                 border: '1px solid var(--color-border)',
-                                borderRadius: '3px',
+                                borderRadius: '0',
                                 cursor: 'pointer',
                                 fontSize: '12px',
                                 color: 'var(--color-text-main)',
@@ -1607,7 +1663,7 @@ Summarize key takeaways and suggest next steps or further reading.
                             padding: '5px 12px',
                             background: 'var(--color-background)',
                             border: '1px solid var(--color-border)',
-                            borderRadius: '3px',
+                            borderRadius: '0',
                             cursor: 'pointer',
                             fontSize: '12px',
                             color: 'var(--color-text-main)'

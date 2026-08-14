@@ -23,11 +23,11 @@ export default function ReadingProgress() {
     <div
       style={{
         position: 'fixed',
-        top: '70px',
+        top: 0,
         left: 0,
         right: 0,
         height: '3px',
-        background: 'var(--color-border)',
+        background: 'transparent',
         zIndex: 1000
       }}
     >
@@ -35,7 +35,7 @@ export default function ReadingProgress() {
         style={{
           height: '100%',
           width: `${progress}%`,
-          background: 'var(--color-primary)',
+          background: 'var(--color-text-main)',
           transition: 'width 0.1s ease-out'
         }}
       />
