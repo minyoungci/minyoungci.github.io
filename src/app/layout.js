@@ -9,8 +9,8 @@ export const metadata = {
     default: "Minyoungci | Tech, Life & Beyond",
     template: "%s | Minyoungci"
   },
-  description: "기술 트렌드, 연구, 일상을 탐구하는 개인 블로그입니다.",
-  keywords: ["Tech Blog", "Research", "Life", "Series", "Personal Blog", "Technology", "AI", "기술 블로그"],
+  description: "Being Medical AI Researcher — Science, Medical, AI, Finance를 기록하는 아카이브.",
+  keywords: ["Medical AI", "Science", "AI Research", "Finance", "Healthcare AI", "Tech Blog", "기술 블로그", "의료 AI"],
   authors: [{ name: "Minyoungci" }],
   icons: {
     icon: '/icon.svg',
@@ -24,7 +24,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'Minyoungci',
-    description: '기술 트렌드, 연구, 일상을 탐구하는 개인 블로그',
+    description: 'Being Medical AI Researcher — Science, Medical, AI, Finance를 기록하는 아카이브',
     url: 'https://minyoungci.github.io',
     siteName: 'Minyoungci',
     images: [

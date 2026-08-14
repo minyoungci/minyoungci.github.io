@@ -7,10 +7,10 @@ import { supabase } from '@/lib/supabase';
 import { SAMPLE_POSTS } from '@/lib/samplePosts';
 
 const categoryDescriptions = {
-    'Trend': 'The latest developments and emerging trends in technology and AI.',
-    'Research': 'Deep dives into academic research, papers, and technical analysis.',
-    'Series': 'Multi-part articles and curated collections on specific topics.',
-    'Life': 'Personal reflections, experiences, and life lessons.'
+    'Science': 'Scientific discoveries, research methods, and the questions behind them.',
+    'Medical': 'Medical AI, clinical research, and healthcare technology.',
+    'AI': 'AI research papers, model architectures, and the frontier of machine intelligence.',
+    'Finance': 'Markets, macroeconomics, and the economics of technology.'
 };
 
 export default function SectionClient({ category }) {

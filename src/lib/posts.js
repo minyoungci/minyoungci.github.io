@@ -31,7 +31,7 @@ function getLocalPosts() {
 }
 
 // Tags currently used by the blog's navigation/filters
-const ALLOWED_TAGS = ['Trend', 'Research', 'Series', 'Life'];
+const ALLOWED_TAGS = ['Science', 'Medical', 'AI', 'Finance'];
 
 // Boilerplate example files that shouldn't surface in listings
 const LEGACY_IDS = ['welcome', 'first', 'example-trend', 'example-classic'];

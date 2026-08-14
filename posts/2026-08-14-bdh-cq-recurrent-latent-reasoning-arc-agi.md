@@ -1,7 +1,7 @@
 ---
 title: "토큰 한 줄 뱉지 않고 생각한다 — 1억 5천만 개 파라미터 모델이 ARC-AGI 비용 효율의 벽을 깼다"
 date: "2026-08-14"
-tag: "Research"
+tag: "AI"
 summary: "단 한 개의 사고 토큰도 생성하지 않고 잠재 상태에서 추론하는 150M 파라미터 모델이, ARC-AGI-1에서 태스크당 0.07센트라는 비용으로 29.5%의 정답률을 기록하며 비용-정확도 파레토 프론티어를 새로 그렸다."
 image: "/images/posts/2026-08-14-bdh-cq-recurrent-latent-reasoning-arc-agi/cover.png"
 ---

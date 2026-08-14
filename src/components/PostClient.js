@@ -230,7 +230,7 @@ export default function PostClient({ slug }) {
                   "@type": "ListItem",
                   "position": 2,
                   "name": postData.tag || "Article",
-                  "item": `https://minyoungci.github.io/section/${postData.tag || 'Trend'}/`
+                  "item": `https://minyoungci.github.io/section/${postData.tag || 'AI'}/`
                 },
                 {
                   "@type": "ListItem",

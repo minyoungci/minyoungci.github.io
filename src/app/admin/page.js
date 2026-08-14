@@ -64,14 +64,14 @@ function AdminContent() {
     const [formData, setFormData] = useState({
         title: '',
         slug: '',
-        tag: 'Trend',
+        tag: 'AI',
         summary: '',
         content: '',
         image: ''
     });
 
     // Category options
-    const categoryOptions = ['Trend', 'Research', 'Life'];
+    const categoryOptions = ['Science', 'Medical', 'AI', 'Finance'];
 
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
@@ -81,7 +81,7 @@ function AdminContent() {
     const IMPORT_REPO = 'minyoungci/DailyAIR';
     const BLOG_REPO = 'minyoungci/minyoungci.github.io';
     const IMPORT_DIRS = ['ai-papers', 'economy', 'medical'];
-    const IMPORT_TAG_MAP = { 'ai-papers': 'Research', 'economy': 'Trend', 'medical': 'Research' };
+    const IMPORT_TAG_MAP = { 'ai-papers': 'AI', 'economy': 'Finance', 'medical': 'Medical' };
 
     const [ghToken, setGhToken] = useState('');
     const [importDir, setImportDir] = useState('ai-papers');
@@ -229,7 +229,7 @@ function AdminContent() {
             setFormData({
                 title,
                 slug,
-                tag: IMPORT_TAG_MAP[importDir] || 'Research',
+                tag: IMPORT_TAG_MAP[importDir] || 'AI',
                 summary,
                 content,
                 image: imageMatch ? imageMatch[1] : ''
@@ -383,7 +383,7 @@ function AdminContent() {
             setFormData({
                 title: data.title || '',
                 slug: data.id || '',
-                tag: data.tag || 'Trend',
+                tag: data.tag || 'AI',
                 summary: data.summary || '',
                 content: data.content || '',
                 image: data.image || ''
@@ -424,7 +424,7 @@ function AdminContent() {
         setFormData({
             title: '',
             slug: '',
-            tag: 'Trend',
+            tag: 'AI',
             summary: '',
             content: '',
             image: ''
@@ -1031,7 +1031,7 @@ Summarize key takeaways and suggest next steps or further reading.
                 setFormData({
                     title: '',
                     slug: '',
-                    tag: 'Trend',
+                    tag: 'AI',
                     summary: '',
                     content: '',
                     image: ''

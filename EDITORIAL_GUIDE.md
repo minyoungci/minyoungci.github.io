@@ -43,7 +43,7 @@ The Gradient에 발행되는 모든 글(직접 작성, DailyAIR import 포함)�
 
 - `title`: 원문 제목 유지 (— 부제 포함 가능)
 - `date`: 슬러그 앞의 YYYY-MM-DD
-- `tag`: Trend | Research | Series | Life 중 하나
+- `tag`: Science | Medical | AI | Finance 중 하나 (DailyAIR 매핑: ai-papers→AI, medical→Medical, economy→Finance)
 - `summary`: 도입 문단에서 추출한 100~150자. 취재 경위·메타 서술 금지.
 - `image`: 커버 경로 (`/images/posts/<slug>/cover.png`)
 

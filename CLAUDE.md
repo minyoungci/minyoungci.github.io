@@ -26,7 +26,7 @@ Markdown content is processed with `gray-matter` (frontmatter) and `remark`/`rem
 ### Routing Structure
 - `/` - Homepage with all posts grid (client-side, fetches from Supabase)
 - `/[slug]/` - Individual post pages (statically generated)
-- `/section/[category]/` - Category pages (Classic, Trend, Guide, News)
+- `/section/[category]/` - Category pages (Science, Medical, AI, Finance)
 - `/admin/` - CMS with markdown editor, image uploads, and post management
 
 ### Key Files
@@ -45,7 +45,7 @@ Markdown content is processed with `gray-matter` (frontmatter) and `remark`/`rem
 ```yaml
 title: "Post Title"
 date: "YYYY-MM-DD"
-tag: "Classic" | "Trend" | "Guide" | "News"
+tag: "Science" | "Medical" | "AI" | "Finance"
 summary: "Brief description"
 image: "/images/cover.jpg"  # optional
 ```

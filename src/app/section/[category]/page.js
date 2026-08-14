@@ -2,10 +2,10 @@ import { getSortedPostsData } from '@/lib/posts';
 import SectionClient from '@/components/SectionClient';
 
 const categoryDescriptions = {
-    'Trend': '최신 기술 트렌드와 AI 동향을 다룹니다.',
-    'Research': '학술 연구와 기술 분석을 심층적으로 탐구합니다.',
-    'Series': '주제별 시리즈 콘텐츠 모음입니다.',
-    'Life': '일상의 경험과 생각을 공유합니다.'
+    'Science': '과학적 발견과 연구 방법, 그 뒤의 질문들을 다룹니다.',
+    'Medical': '의료 AI, 임상 연구, 헬스케어 기술을 다룹니다.',
+    'AI': 'AI 연구 논문과 모델 아키텍처, 머신 인텔리전스의 최전선을 다룹니다.',
+    'Finance': '시장과 거시경제, 기술 산업의 경제학을 다룹니다.'
 };
 
 export async function generateMetadata({ params }) {
@@ -40,10 +40,10 @@ export async function generateStaticParams() {
         const tags = new Set(posts ? posts.map(post => post.tag) : []);
 
         // Always ensure default categories exist
-        tags.add('Trend');
-        tags.add('Research');
-        tags.add('Series');
-        tags.add('Life');
+        tags.add('Science');
+        tags.add('Medical');
+        tags.add('AI');
+        tags.add('Finance');
 
         return Array.from(tags).map(tag => ({
             category: tag,
@@ -51,10 +51,10 @@ export async function generateStaticParams() {
     } catch (error) {
         console.error("Error generating section params:", error);
         return [
-            { category: 'Trend' },
-            { category: 'Research' },
-            { category: 'Series' },
-            { category: 'Life' }
+            { category: 'Science' },
+            { category: 'Medical' },
+            { category: 'AI' },
+            { category: 'Finance' }
         ];
     }
 }

@@ -44,17 +44,17 @@ export default function Navbar() {
                 <Link href="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                     Articles
                 </Link>
-                <Link href="/section/Trend" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    Trend
+                <Link href="/section/Science" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    Science
                 </Link>
-                <Link href="/section/Research" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    Research
+                <Link href="/section/Medical" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    Medical
                 </Link>
-                <Link href="/section/Series" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    Series
+                <Link href="/section/AI" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    AI
                 </Link>
-                <Link href="/section/Life" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-                    Life
+                <Link href="/section/Finance" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                    Finance
                 </Link>
                 <Link href="/admin" className="nav-link" onClick={() => setIsMenuOpen(false)}>
                     Write

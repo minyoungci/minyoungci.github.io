@@ -7,7 +7,7 @@ import SearchBar from '@/components/SearchBar';
 import { supabase } from '@/lib/supabase';
 import { SAMPLE_POSTS } from '@/lib/samplePosts';
 
-const categories = ['Trend', 'Research', 'Series', 'Life'];
+const categories = ['Science', 'Medical', 'AI', 'Finance'];
 
 export default function Home() {
     const [allPostsData, setAllPostsData] = useState([]);
@@ -86,7 +86,7 @@ export default function Home() {
                 <header className="masthead animate-fade-in">
                     <h1 className="masthead-title">The Gradient</h1>
                     <p className="masthead-sub">
-                        기술 트렌드, 연구, 그리고 일상. AI와 머신러닝을 중심으로 기록하는 아카이브.
+                        Being Medical AI Researcher...
                     </p>
                 </header>
 
