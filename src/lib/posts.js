@@ -30,6 +30,38 @@ function getLocalPosts() {
         });
 }
 
+// Tags currently used by the blog's navigation/filters
+const ALLOWED_TAGS = ['Trend', 'Research', 'Series', 'Life'];
+
+// Boilerplate example files that shouldn't surface in listings
+const LEGACY_IDS = ['welcome', 'first', 'example-trend', 'example-classic'];
+
+// Local markdown posts for the client-side index (build-time JSON)
+export function getLocalPostsMeta() {
+    return getLocalPosts().filter((post) =>
+        !LEGACY_IDS.includes(post.id) && ALLOWED_TAGS.includes(post.tag)
+    );
+}
+
+// Full local markdown post (meta + raw content) for client-side rendering
+export function getLocalPostFull(id) {
+    if (LEGACY_IDS.includes(id)) return null;
+    try {
+        const fullPath = path.join(postsDirectory, `${id}.md`);
+        if (!fs.existsSync(fullPath)) return null;
+        const fileContents = fs.readFileSync(fullPath, 'utf8');
+        const matterResult = matter(fileContents);
+        return {
+            id,
+            content: matterResult.content,
+            ...matterResult.data,
+        };
+    } catch (e) {
+        console.error('Local post read error:', e);
+        return null;
+    }
+}
+
 export async function getSortedPostsData() {
     let posts = [];
 

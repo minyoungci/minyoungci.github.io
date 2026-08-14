@@ -57,24 +57,54 @@ export default function PostClient({ slug }) {
       return processedContent.toString();
     }
 
-    // Sample fallback keeps post pages working until Supabase has real posts
-    async function useSamplePost() {
-      const samplePost = getSamplePostById(slug);
-      if (!samplePost) {
+    // Related posts for markdown/sample content: same tag from the local index
+    async function loadFallbackRelated(post) {
+      try {
+        const res = await fetch('/posts-index.json');
+        if (res.ok) {
+          const index = await res.json();
+          const related = index
+            .filter((p) => p.id !== slug && p.tag === post.tag)
+            .slice(0, 2);
+          if (related.length > 0) {
+            setRelatedPosts(related);
+            return;
+          }
+        }
+      } catch (err) { /* index unavailable — fall through to samples */ }
+
+      setRelatedPosts(
+        SAMPLE_POSTS
+          .filter((p) => p.id !== slug && p.tag === post.tag)
+          .slice(0, 2)
+      );
+    }
+
+    // Fallback chain: markdown post JSON (build-time) → sample posts
+    async function useFallbackPost() {
+      let post = null;
+
+      try {
+        const res = await fetch('/posts-content.json');
+        if (res.ok) {
+          const posts = await res.json();
+          post = posts.find((p) => p.id === slug) || null;
+        }
+      } catch (err) { /* no local markdown posts — try samples */ }
+
+      if (!post) post = getSamplePostById(slug);
+
+      if (!post) {
         setError(true);
         setLoading(false);
         return;
       }
 
       setPostData({
-        ...samplePost,
-        contentHtml: await renderMarkdown(samplePost.content)
+        ...post,
+        contentHtml: await renderMarkdown(post.content)
       });
-      setRelatedPosts(
-        SAMPLE_POSTS
-          .filter((post) => post.id !== slug && post.tag === samplePost.tag)
-          .slice(0, 2)
-      );
+      await loadFallbackRelated(post);
       setLoading(false);
     }
 
@@ -87,7 +117,7 @@ export default function PostClient({ slug }) {
           .single();
 
         if (postError || !post) {
-          await useSamplePost();
+          await useFallbackPost();
           return;
         }
 
@@ -107,8 +137,8 @@ export default function PostClient({ slug }) {
         setRelatedPosts(allPosts || []);
         setLoading(false);
       } catch (err) {
-        console.warn('Supabase unavailable, trying sample posts:', err?.message || err);
-        await useSamplePost();
+        console.warn('Supabase unavailable, trying local posts:', err?.message || err);
+        await useFallbackPost();
       }
     }
 

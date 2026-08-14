@@ -17,22 +17,34 @@ export default function Home() {
 
     useEffect(() => {
         async function fetchPosts() {
+            let supabasePosts = [];
+            let localPosts = [];
+
             try {
                 const { data, error } = await supabase
                     .from('posts')
                     .select('*')
                     .order('date', { ascending: false });
-
-                if (error || !data || data.length === 0) {
-                    if (error) console.warn('Supabase unavailable, showing sample posts:', error.message);
-                    setAllPostsData(SAMPLE_POSTS);
-                } else {
-                    setAllPostsData(data);
-                }
+                if (!error && data) supabasePosts = data;
             } catch (err) {
-                console.warn('Supabase unavailable, showing sample posts:', err?.message || err);
-                setAllPostsData(SAMPLE_POSTS);
+                console.warn('Supabase unavailable:', err?.message || err);
             }
+
+            // Markdown posts published to /posts (build-time index)
+            try {
+                const res = await fetch('/posts-index.json');
+                if (res.ok) localPosts = await res.json();
+            } catch (err) {
+                console.warn('Local post index unavailable:', err?.message || err);
+            }
+
+            const seen = new Set(supabasePosts.map((post) => post.id));
+            const merged = [
+                ...supabasePosts,
+                ...localPosts.filter((post) => !seen.has(post.id))
+            ].sort((a, b) => (a.date < b.date ? 1 : -1));
+
+            setAllPostsData(merged.length > 0 ? merged : SAMPLE_POSTS);
             setLoading(false);
         }
 

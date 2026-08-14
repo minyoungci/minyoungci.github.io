@@ -76,6 +76,202 @@ function AdminContent() {
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
 
+    // ========== DailyAIR Import ==========
+    const GH_TOKEN_KEY = 'gh_import_token';
+    const IMPORT_REPO = 'minyoungci/DailyAIR';
+    const BLOG_REPO = 'minyoungci/minyoungci.github.io';
+    const IMPORT_DIRS = ['ai-papers', 'economy', 'medical'];
+    const IMPORT_TAG_MAP = { 'ai-papers': 'Research', 'economy': 'Trend', 'medical': 'Research' };
+
+    const [ghToken, setGhToken] = useState('');
+    const [importDir, setImportDir] = useState('ai-papers');
+    const [importFiles, setImportFiles] = useState([]);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importError, setImportError] = useState('');
+    const [publishingToRepo, setPublishingToRepo] = useState(false);
+
+    // Token lives only in this browser's localStorage — never committed
+    useEffect(() => {
+        if (mounted) setGhToken(localStorage.getItem(GH_TOKEN_KEY) || '');
+    }, [mounted]);
+
+    const saveGhToken = (value) => {
+        setGhToken(value);
+        localStorage.setItem(GH_TOKEN_KEY, value);
+    };
+
+    const ghFetch = (apiPath, options = {}) => fetch(`https://api.github.com${apiPath}`, {
+        ...options,
+        headers: {
+            'Authorization': `Bearer ${ghToken}`,
+            'Accept': 'application/vnd.github+json',
+            ...(options.headers || {})
+        }
+    });
+
+    const decodeBase64Utf8 = (b64) => {
+        const bytes = Uint8Array.from(atob(b64.replace(/\n/g, '')), (c) => c.charCodeAt(0));
+        return new TextDecoder('utf-8').decode(bytes);
+    };
+
+    const encodeUtf8Base64 = (text) => {
+        const bytes = new TextEncoder().encode(text);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i += 8192) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+        }
+        return btoa(binary);
+    };
+
+    const loadImportFiles = async (dir) => {
+        setImportDir(dir);
+        setImportError('');
+        setImportLoading(true);
+        try {
+            const res = await ghFetch(`/repos/${IMPORT_REPO}/contents/${dir}`);
+            if (!res.ok) {
+                throw new Error(res.status === 401 || res.status === 403
+                    ? '토큰이 유효하지 않거나 권한이 없습니다'
+                    : `GitHub API ${res.status}`);
+            }
+            const files = await res.json();
+            setImportFiles(
+                files
+                    .filter((f) => f.type === 'file' && f.name.endsWith('.md'))
+                    .sort((a, b) => (a.name < b.name ? 1 : -1))
+            );
+        } catch (err) {
+            setImportError(err.message);
+            setImportFiles([]);
+        }
+        setImportLoading(false);
+    };
+
+    // Convert a DailyAIR markdown file into blog post form data
+    const handleImportFile = async (fileName) => {
+        setImportError('');
+        setImportLoading(true);
+        try {
+            const res = await ghFetch(`/repos/${IMPORT_REPO}/contents/${importDir}/${encodeURIComponent(fileName)}`);
+            if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+            const file = await res.json();
+            const raw = decodeBase64Utf8(file.content);
+
+            const slug = fileName.replace(/\.md$/, '');
+            const lines = raw.split('\n');
+            let title = slug;
+            let titleFound = false;
+            let dateLineSkipped = false;
+            const bodyLines = [];
+
+            for (const line of lines) {
+                if (!titleFound && /^#\s+/.test(line)) {
+                    title = line.replace(/^#\s+/, '').trim();
+                    titleFound = true;
+                    continue;
+                }
+                if (titleFound && !dateLineSkipped
+                    && /^\*\*.+\*\*\s*$/.test(line.trim())
+                    && bodyLines.every((l) => !l.trim())) {
+                    dateLineSkipped = true;
+                    continue;
+                }
+                bodyLines.push(line);
+            }
+
+            const content = bodyLines.join('\n').replace(/^(\s|-{3,})+/, '').trim();
+            const imageMatch = content.match(/!\[[^\]]*\]\((https?:[^)\s]+)\)/);
+            const summarySource = content
+                .split(/\n\s*\n/)
+                .find((block) => {
+                    const t = block.trim();
+                    return t && !t.startsWith('#') && !t.startsWith('![')
+                        && !t.startsWith('---') && !t.startsWith('*출처') && !t.startsWith('|');
+                }) || '';
+            const summary = summarySource
+                .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+                .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                .replace(/[*_`#>]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 150);
+
+            setFormData({
+                title,
+                slug,
+                tag: IMPORT_TAG_MAP[importDir] || 'Research',
+                summary,
+                content,
+                image: imageMatch ? imageMatch[1] : ''
+            });
+            setIsEditMode(false);
+            setEditingPostId(null);
+            setStatus('idle');
+            setMessage('가져오기 완료 — 편집 후 발행하세요');
+            setHasUnsavedChanges(true);
+        } catch (err) {
+            setImportError(err.message);
+        }
+        setImportLoading(false);
+    };
+
+    // Publish the current form as a markdown file committed to the blog repo.
+    // Pushing to main triggers the Pages deploy, so the post goes live in ~1 min.
+    const handlePublishToRepo = async () => {
+        if (!formData.slug?.trim() || !formData.title?.trim()) {
+            setStatus('error');
+            setMessage('Title과 Slug가 필요합니다');
+            return;
+        }
+
+        setPublishingToRepo(true);
+        setStatus('loading');
+        try {
+            const slug = formData.slug.trim();
+            const filePath = `posts/${slug}.md`;
+            const slugDate = slug.match(/^(\d{4}-\d{2}-\d{2})/);
+            const postDate = slugDate ? slugDate[1] : new Date().toISOString().slice(0, 10);
+            const escapeQuotes = (s) => (s || '').replace(/"/g, '\\"');
+            const markdown = [
+                '---',
+                `title: "${escapeQuotes(formData.title.trim())}"`,
+                `date: "${postDate}"`,
+                `tag: "${formData.tag}"`,
+                `summary: "${escapeQuotes(formData.summary?.trim() || '')}"`,
+                ...(formData.image ? [`image: "${formData.image}"`] : []),
+                '---',
+                '',
+                formData.content || ''
+            ].join('\n');
+
+            let sha;
+            const existing = await ghFetch(`/repos/${BLOG_REPO}/contents/${filePath}`);
+            if (existing.ok) sha = (await existing.json()).sha;
+
+            const res = await ghFetch(`/repos/${BLOG_REPO}/contents/${filePath}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    message: `post: ${formData.title.trim()}`,
+                    content: encodeUtf8Base64(markdown),
+                    ...(sha ? { sha } : {})
+                })
+            });
+            if (!res.ok) {
+                const detail = await res.json().catch(() => ({}));
+                throw new Error(detail.message || `GitHub API ${res.status}`);
+            }
+
+            setStatus('success');
+            setMessage('저장소에 커밋 완료 — 1~2분 후 배포에 반영됩니다');
+            clearAutosave();
+            setHasUnsavedChanges(false);
+        } catch (err) {
+            setStatus('error');
+            setMessage(`발행 실패: ${err.message}`);
+        }
+        setPublishingToRepo(false);
+    };
+
     // Word count
     const wordCount = formData.content.trim() ? formData.content.trim().split(/\s+/).length : 0;
     const charCount = formData.content.length;
@@ -1010,7 +1206,124 @@ Summarize key takeaways and suggest next steps or further reading.
                     >
                         Media
                     </button>
+                    <button
+                        onClick={() => setActiveTab('import')}
+                        style={{
+                            flex: 1,
+                            padding: '14px',
+                            background: activeTab === 'import' ? 'var(--color-background)' : 'transparent',
+                            color: activeTab === 'import' ? 'var(--color-text-main)' : 'var(--color-text-muted)',
+                            border: 'none',
+                            borderLeft: '1px solid var(--color-border)',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            fontWeight: '600',
+                            fontSize: '12px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                        }}
+                    >
+                        Import
+                    </button>
                 </div>
+
+                {/* Import Tab — DailyAIR */}
+                {activeTab === 'import' && (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div style={{ padding: '12px', borderBottom: '1px solid var(--color-hairline)' }}>
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-sans)' }}>
+                                GitHub Token (Fine-grained PAT)
+                            </label>
+                            <input
+                                type="password"
+                                value={ghToken}
+                                onChange={(e) => saveGhToken(e.target.value)}
+                                placeholder="github_pat_..."
+                                autoComplete="off"
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: '0',
+                                    fontSize: '12px',
+                                    fontFamily: 'var(--font-mono)',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)'
+                                }}
+                            />
+                            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '6px', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
+                                이 브라우저에만 저장됩니다 (localStorage). DailyAIR 읽기 + 블로그 저장소 쓰기 권한 필요.
+                            </p>
+                        </div>
+
+                        <div style={{ display: 'flex', borderBottom: '1px solid var(--color-hairline)' }}>
+                            {IMPORT_DIRS.map((dir) => (
+                                <button
+                                    key={dir}
+                                    onClick={() => loadImportFiles(dir)}
+                                    disabled={!ghToken || importLoading}
+                                    style={{
+                                        flex: 1,
+                                        padding: '10px 4px',
+                                        background: importDir === dir ? 'var(--color-text-main)' : 'transparent',
+                                        color: importDir === dir ? 'var(--color-background)' : 'var(--color-text-main)',
+                                        border: 'none',
+                                        cursor: ghToken ? 'pointer' : 'not-allowed',
+                                        fontFamily: 'var(--font-sans)',
+                                        fontSize: '12px',
+                                        opacity: ghToken ? 1 : 0.4
+                                    }}
+                                >
+                                    {dir}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+                            {!ghToken ? (
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
+                                    토큰을 입력한 뒤 카테고리를 선택하면 DailyAIR 글 목록을 불러옵니다.
+                                </p>
+                            ) : importLoading ? (
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: 'var(--font-sans)' }}>
+                                    불러오는 중...
+                                </p>
+                            ) : importError ? (
+                                <p style={{ color: 'var(--color-text-main)', fontSize: '13px', fontFamily: 'var(--font-sans)' }}>
+                                    {importError}
+                                </p>
+                            ) : importFiles.length === 0 ? (
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', fontFamily: 'var(--font-sans)' }}>
+                                    카테고리를 선택하세요.
+                                </p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {importFiles.map((file) => (
+                                        <button
+                                            key={file.name}
+                                            onClick={() => handleImportFile(file.name)}
+                                            style={{
+                                                textAlign: 'left',
+                                                padding: '10px 12px',
+                                                background: 'var(--color-background)',
+                                                border: '1px solid var(--color-hairline)',
+                                                borderRadius: '0',
+                                                cursor: 'pointer',
+                                                fontFamily: 'var(--font-sans)',
+                                                fontSize: '12px',
+                                                color: 'var(--color-text-main)',
+                                                lineHeight: 1.4,
+                                                wordBreak: 'break-all'
+                                            }}
+                                        >
+                                            ↗ {file.name.replace(/\.md$/, '')}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Posts Tab */}
                 {activeTab === 'posts' && (
@@ -1456,6 +1769,26 @@ Summarize key takeaways and suggest next steps or further reading.
                                 }}
                             >
                                 Cancel
+                            </button>
+                        )}
+                        {ghToken && (
+                            <button
+                                onClick={handlePublishToRepo}
+                                disabled={publishingToRepo}
+                                title="블로그 저장소 /posts에 마크다운으로 커밋 (Supabase 불필요)"
+                                style={{
+                                    padding: '8px 16px',
+                                    background: 'var(--color-background)',
+                                    color: 'var(--color-text-main)',
+                                    border: '1px solid var(--color-text-main)',
+                                    borderRadius: '0',
+                                    fontFamily: 'var(--font-sans)',
+                                    fontSize: '13px',
+                                    cursor: publishingToRepo ? 'wait' : 'pointer',
+                                    opacity: publishingToRepo ? 0.7 : 1
+                                }}
+                            >
+                                {publishingToRepo ? 'Committing...' : 'Publish → GitHub'}
                             </button>
                         )}
                         <button

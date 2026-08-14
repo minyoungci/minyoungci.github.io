@@ -25,34 +25,42 @@ export default function SectionClient({ category }) {
             setLoading(true);
             setError(null);
 
-            const sampleFallback = SAMPLE_POSTS.filter(
-                (post) => post.tag === decodeURIComponent(category)
-            );
+            const decodedTag = decodeURIComponent(category);
+            let supabasePosts = [];
+            let localPosts = [];
 
-            if (!supabase) {
-                setFilteredPosts(sampleFallback);
-                setLoading(false);
-                return;
+            if (supabase) {
+                try {
+                    const { data, error: fetchError } = await supabase
+                        .from('posts')
+                        .select('id, title, tag, summary, image, date')
+                        .eq('tag', category)
+                        .order('date', { ascending: false });
+                    if (!fetchError && data) supabasePosts = data;
+                } catch (err) {
+                    console.warn("Supabase unavailable:", err?.message || err);
+                }
             }
 
             try {
-                const { data, error: fetchError } = await supabase
-                    .from('posts')
-                    .select('id, title, tag, summary, image, date')
-                    .eq('tag', category)
-                    .order('date', { ascending: false });
-
-                if (fetchError || !data || data.length === 0) {
-                    if (fetchError) console.warn("Supabase unavailable, showing sample posts:", fetchError.message);
-                    setFilteredPosts(sampleFallback);
-                } else {
-                    setFilteredPosts(data);
+                const res = await fetch('/posts-index.json');
+                if (res.ok) {
+                    const index = await res.json();
+                    localPosts = index.filter((post) => post.tag === decodedTag);
                 }
             } catch (err) {
-                console.warn("Supabase unavailable, showing sample posts:", err?.message || err);
-                setFilteredPosts(sampleFallback);
+                console.warn("Local post index unavailable:", err?.message || err);
             }
 
+            const seen = new Set(supabasePosts.map((post) => post.id));
+            const merged = [
+                ...supabasePosts,
+                ...localPosts.filter((post) => !seen.has(post.id))
+            ].sort((a, b) => (a.date < b.date ? 1 : -1));
+
+            setFilteredPosts(merged.length > 0
+                ? merged
+                : SAMPLE_POSTS.filter((post) => post.tag === decodedTag));
             setLoading(false);
         }
 
