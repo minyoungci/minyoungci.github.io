@@ -50,6 +50,13 @@ summary: "Brief description"
 image: "/images/cover.jpg"  # optional
 ```
 
+## Editorial Rules (글 발행 규정)
+
+모든 글 발행·편집(DailyAIR import 포함)은 `EDITORIAL_GUIDE.md`의 규정을 따른다.
+핵심: 한 문단 = 한 논지(3~5문장, 700자 초과 금지), 헤딩+단일 거대 문단 금지,
+출처·검증 메타는 글 끝 `## 취재 노트` 한 섹션으로 통합, 참고 문헌 형식 통일((원문 미열람) 표기),
+이미지는 흑백 에디토리얼 톤으로 `public/images/posts/<slug>/`에 커밋.
+
 ## Deployment
 
 Pushes to `main` trigger GitHub Actions (`.github/workflows/deploy.yml`) which builds and deploys to GitHub Pages. The site is served at `https://minyoungci.github.io`.
