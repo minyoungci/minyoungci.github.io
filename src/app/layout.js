@@ -53,7 +53,12 @@ export const metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     }
-  }
+  },
+  verification: {
+    other: {
+      'naver-site-verification': 'db5e06d0d841af5eb110e39715a9a5ecf028f040',
+    },
+  },
 };
 
 export default function RootLayout({ children }) {
