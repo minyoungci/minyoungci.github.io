@@ -135,7 +135,7 @@ RDPO는 취재 끝에 맞은 기사에만 점수를 주지 않는다. 매 라운
 ## 확인 기록
 
 ### 높은 확신도
-- arXiv:2609.29444v1 HTML에서 제목, 저자·소속(Zhejiang University / Tencent), Abstract의 평균 50.7·≤8B 대비 +4.2·RDPO·프롬프트 패러다임, §1의 ReAct 64K 미완료 59% 초과, §3의 Planner–Synthesizer·\(s_t=(q,M_t)\)·SFT 약 10K·RDPO 수식, Table 1의 IterSynth-8B 30.9/55.4/55.3/66.0/46.0·평균 50.7·MiroThinker-v1.0-8B 46.5, §4.2의 BrowseComp-ZH +15.2·xBench-2510 +5.4, Table 2의 SFT 44.1·GRPO 48.9·RDPO 50.7·w/o RD 47.2, Table 3의 −17.4/−41.1, §5.1 프롬프트 표의 Claude 60.6/63.2/66.1·DeepSeek 43.4/45.2/47.9·BCzh 70.2 vs 60.2, Appendix H의 59–65% Not completed, 코드 URL `https://github.com/Tencent/IterSynth`를 확인했다.
+- arXiv:2609.29444v1 HTML에서 제목, 저자·소속(Zhejiang University / Tencent), Abstract의 평균 50.7·≤8B 대비 +4.2·RDPO·프롬프트 패러다임, §1의 ReAct 64K 미완료 59% 초과, §3의 Planner–Synthesizer·\(s_t=(q,M_t)\)·SFT 약 10K·RDPO 수식, Table 1의 IterSynth-8B 30.9/55.4/55.3/66.0/46.0·평균 50.7·MiroThinker-v1.0-8B 46.5, §4.2의 BrowseComp-ZH +15.2, Table 1의 xBench-DS-2510 46.0, Table 2의 SFT 44.1·GRPO 48.9·RDPO 50.7·w/o RD 47.2, Table 3의 −17.4/−41.1, §5.1 프롬프트 표의 Claude 60.6/63.2/66.1·DeepSeek 43.4/45.2/47.9·BCzh 70.2 vs 60.2, Appendix H의 59–65% 미완료, 코드 URL `https://github.com/Tencent/IterSynth`를 확인했다.
 
 ### 낮은 확신도
 - Figure 1–3·Appendix 도판의 세부 시각 요소는 캡션·본문 서술에 의존하며, 이 지면이 원 도판을 재측정하지 않았다.
