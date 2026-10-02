@@ -1,5 +1,5 @@
 ---
-title: "서보듀타이드, SYNCHRONIZE-1에서 76주 treatment-regimen 체중 −13.0%"
+title: "서보듀타이드, SYNCHRONIZE-1에서 76주 treatment-regimen 체중 −12.2%와 −13.0%"
 date: "2026-10-02"
 tag: "Medical"
 summary: "NEJM SYNCHRONIZE-1에서 서보듀타이드 주 1회는 76주 treatment-regimen 체중 −12.2%/−13.0%(위약 −5.4%)를 보였다. 이 지면은 추정량 차이, MRI 간·내장지방, 위약군 GLP-1 사용, GI 중단을 헤드라인과 같이 읽는다."
@@ -8,15 +8,15 @@ image: "/images/posts/2026-10-02-survodutide-synchronize-1-obesity-dual-agonist/
 
 > 이 글은 의료적 조언이 아니라 학술 연구를 소개하는 정보성 콘텐츠다. 비만·과체중의 약물 치료 선택, 용량, 투여 일정, 이상반응 관리, 임상시험 참여 여부는 개인의 병력·동반질환·지역 의료 자원에 따라 크게 달라지므로, 이 글의 어떤 내용도 담당 전문의와의 상담을 대신할 수 없다. survodutide는 조사 중 약물이며 규제 기관 승인을 받지 않았다. 이 지면은 승인·처방 권고를 하지 않는다.
 
-> **출처:** 1차는 2026년 8월 20일 *N Engl J Med*에 실린 le Roux CW, Wharton S, Startseva E 등의 SYNCHRONIZE-1 논문이다. "Survodutide Once Weekly for the Treatment of Adults with Obesity," *N Engl J Med*. 2026 Aug 20;395(8):776-787. Epub 2026 Jun 7. DOI [10.1056/NEJMoa2600751](https://doi.org/10.1056/NEJMoa2600751), PMID [42253238](https://pubmed.ncbi.nlm.nih.gov/42253238/), ClinicalTrials.gov [NCT06066515](https://clinicaltrials.gov/study/NCT06066515). PubMed 초록과 원문 Methods의 표본 크기 가정 문장, 색인된 원문 표 숫자열의 efficacy ≥5%(83.8%·85.1%·38.8%)를 확인했다. 표의 열 머리글은 이 세션이 보지 못해 83.8%와 85.1%에 용량을 붙이지 않는다. 2차로 AJMC Maggie L. Shaw(2026-06-08)의 SYNCHRONIZE-1·MRI 하위연구·내약성 요약을 썼다([링크](https://www.ajmc.com/view/survodutide-phase-3-data-signal-metabolic-gains-beyond-weight-loss)). SYNCHRONIZE-2(비만+제2형 당뇨)는 AJMC Giuliana Grossi(2026-10-01) 2차 보도를 감시 항목으로만 적는다([링크](https://www.ajmc.com/view/dual-agonist-survodutide-delivers-up-to-13-1-weight-loss-in-t2d)). 회사·매체 주장은 본문에서 2차로 표시한다.
+> **출처:** 1차는 2026년 8월 20일 *N Engl J Med*에 실린 le Roux CW, Wharton S, Startseva E 등의 SYNCHRONIZE-1 논문이다. "Survodutide Once Weekly for the Treatment of Adults with Obesity," *N Engl J Med*. 2026 Aug 20;395(8):776-787. Epub 2026 Jun 7. DOI [10.1056/NEJMoa2600751](https://doi.org/10.1056/NEJMoa2600751), PMID [42253238](https://pubmed.ncbi.nlm.nih.gov/42253238/), ClinicalTrials.gov [NCT06066515](https://clinicaltrials.gov/study/NCT06066515). PubMed 초록, 원문 Methods의 표본 크기 가정, efficacy 체중 −15.3% / −16.6% / −3.2%, 표 숫자열의 ≥5%(83.8%·85.1%·38.8%)와 ≥20%(24.9·28.5·위약 6.6)를 확인했다. 표의 열 머리글은 보지 못해 83.8%·85.1%와 24.9·28.5에 용량을 붙이지 않는다. 2차로 AJMC Maggie L. Shaw(2026-06-08)의 SYNCHRONIZE-1·MRI 하위연구·내약성 요약을 썼다([링크](https://www.ajmc.com/view/survodutide-phase-3-data-signal-metabolic-gains-beyond-weight-loss)). SYNCHRONIZE-2(비만+제2형 당뇨)는 AJMC Giuliana Grossi(2026-10-01) 2차 보도를 감시 항목으로만 적는다([링크](https://www.ajmc.com/view/dual-agonist-survodutide-delivers-up-to-13-1-weight-loss-in-t2d)). 회사·매체 주장은 본문에서 2차로 표시한다.
 
 ![새벽 빛이 드는 빈 진료실. 체중계와 부드러운 의자가 창가에 있다. 사람 얼굴·텍스트·로고 없음.](/images/posts/2026-10-02-survodutide-synchronize-1-obesity-dual-agonist/cover.png)
 
 ---
 
-비만 약물 뉴스의 첫 줄은 대개 체중 감소 퍼센트다. 2026년 6월 7일 전자 공개되고 8월 20일 *NEJM* 본문에 실린 SYNCHRONIZE-1도 그 문법을 탄다. 글루카곤 수용체–GLP-1 수용체 이중작용제 survodutide를 주 1회 피하로 올린 3.6 mg·6.0 mg 팔이, 당뇨가 없는 비만·과체중 성인에서 76주 treatment-regimen 추정량으로 체중을 각각 −12.2%, −13.0% 줄였다는 성적표다. 위약은 −5.4%였다. ≥5% 감량 응답자는 72.6% / 71.9% / 46.3%였고, 위약 대비 모두 P<0.001이다.
+SYNCHRONIZE-1에서 서보듀타이드 주 1회 3.6 mg과 6.0 mg은 76주 treatment-regimen 추정량으로 체중을 각각 −12.2%, −13.0% 줄였고, 위약은 −5.4%였다. 그 숫자는 efficacy 추정량(−15.3% / −16.6% / −3.2%)과 같은 질문이 아니다. 2026년 6월 7일 전자 공개되고 8월 20일 *NEJM*에 실린 이 3상은 당뇨가 없는 비만·과체중 성인 725명을 대상으로 했다. 같은 treatment-regimen 1차 창에서 ≥5% 감량은 72.6% / 71.9% / 46.3%였고, 위약 대비 비교는 모두 P<0.001이다.
 
-헤드라인만 남기면 “−13%”로 끝난다. 이 지면이 확인하려는 것은 그 한 줄이 빠뜨리기 쉬운 네 칸이다. (1) treatment-regimen 추정량과 efficacy 추정량이 같은 숫자가 아니라는 점, (2) MRI 하위연구에서 간지방·내장지방이 체중 곡선과 다른 속도로 보일 수 있다는 2차 신호, (3) 위약 팔이 시험에 남은 채 다른 GLP-1을 쓴 비율, (4) 위장관 이상반응으로 인한 중단률이 높다는 점. SYNCHRONIZE-2(비만+T2D)의 10월 1일 2차 보도는 감시 항목으로만 적는다.
+헤드라인만 남기면 한 숫자가 시험 전체가 된다. 이 지면이 확인하려는 것은 그 한 줄이 빠뜨리기 쉬운 네 칸이다. (1) treatment-regimen 추정량과 efficacy 추정량이 같은 숫자가 아니라는 점, (2) MRI 하위연구에서 간지방·내장지방이 체중 곡선과 다른 속도로 보일 수 있다는 2차 신호, (3) 위약 팔이 시험에 남은 채 다른 GLP-1을 쓴 비율, (4) 위장관 이상반응으로 인한 중단률이 높다는 점. SYNCHRONIZE-2(비만+T2D)의 10월 1일 2차 보도는 감시 항목으로만 적는다.
 
 ## 1. 시험의 뼈대, 당뇨를 뺀 725명, 주 1회 피하
 
@@ -30,7 +30,7 @@ image: "/images/posts/2026-10-02-survodutide-synchronize-1-obesity-dual-agonist/
 
 ## 2. 헤드라인 숫자, treatment-regimen −12.2% / −13.0%
 
-오늘 글의 첫 핵심 숫자다. 76주 treatment-regimen 추정량에서 체중 변화는 3.6 mg −12.2%(95% CI −13.6 to −10.8), 6.0 mg −13.0%(−14.4 to −11.6), 위약 −5.4%(−6.9 to −4.0)다. ≥5% 감량은 72.6% / 71.9% / 46.3%이고, 이 1차 창의 위약 대비 비교는 모두 P<0.001이다. 같은 treatment-regimen 추정량에서 ≥20% 감량은 28.5% 대 위약 6.6%로 적힌다.
+오늘 글의 첫 핵심 숫자다. 76주 treatment-regimen 추정량에서 체중 변화는 3.6 mg −12.2%(95% CI −13.6 to −10.8), 6.0 mg −13.0%(−14.4 to −11.6), 위약 −5.4%(−6.9 to −4.0)다. ≥5% 감량은 72.6% / 71.9% / 46.3%이고, 이 1차 창의 위약 대비 비교는 모두 P<0.001이다. 같은 treatment-regimen 추정량에서 ≥20% 감량은 24.9%, 28.5%, 위약 6.6%다.
 
 3.6 mg과 6.0 mg의 treatment-regimen 점추정은 0.8%포인트밖에 다르지 않다. 헤드라인이 고용량이 압도적으로 더 줄였다고 기울면, 이 1차 창과 어긋난다. 용량 간 차이가 더 크게 보이는 칸이 있다면, 그것은 대개 다른 추정량이나 하위연구다.
 
@@ -42,7 +42,7 @@ image: "/images/posts/2026-10-02-survodutide-synchronize-1-obesity-dual-agonist/
 
 treatment-regimen과 efficacy의 간격이 곧 헤드라인의 빈칸이다. 전자는 실제 시험 과정에서 일어난 일에 가깝고, 후자는 이상적으로 잘 지켰을 때에 가깝다. −13%와 −16.6%를 같은 문장에 섞으면, 독자는 어느 추정량을 보고 있는지 알 수 없다. 위약도 −5.4%에서 −3.2%로 바뀐다. 추정량을 바꾸면 대조군 숫자까지 움직인다.
 
-AJMC는 학회 토론에서 6.0 mg 팔의 성별 차이(여성 약 19.5% 대 남성 약 12.6%)를 전한다. GLP-1 계열에서 자주 보이는 패턴이라는 서술이다. 그 숫자는 이 NEJM 논문의 결과가 아니다. **2차·낮은 확신도**로만 적는다. 이 지면은 초록의 1차 창(−12.2 / −13.0 / −5.4, ≥5% 72.6 / 71.9 / 46.3)을 높은 확신도로 두고, 성별 수치는 **2차**로 표시한다.
+AJMC는 학회 토론에서 6.0 mg 팔의 성별 차이(여성 약 19.5% 대 남성 약 12.6%)를 전한다. GLP-1 계열에서 자주 보이는 패턴이라는 서술이다. 그 숫자는 이 NEJM 논문의 결과가 아니다. **2차·낮은 확신도**로만 적는다. 이 지면은 초록의 1차 창과 원문 PDF에서 맞춘 efficacy 체중(−15.3 / −16.6 / −3.2)을 높은 확신도로 두고, 성별 수치는 **2차**로 표시한다.
 
 ![창가 빛 아래 나란히 놓인 두 개의 빈 유리병과 숫자 없는 쌍 다이얼. 두 추정량을 글자 없이 은유한다.](/images/posts/2026-10-02-survodutide-synchronize-1-obesity-dual-agonist/two-estimands.png)
 
@@ -138,15 +138,15 @@ survodutide는 조사 중 글루카곤 수용체–GLP-1 수용체 이중작용�
 - 기저: 평균 연령 47.1; 남성 40.6%; 평균 BMI 37.9; 평균 체중 108.8 kg
 - 1차: 76주 체중 변화율 + ≥5% 감량; 1차 분석 = treatment-regimen 추정량(조기 중단·금지 비만약·장기 증량 포함)
 - Week 76 treatment-regimen: −12.2%(−13.6 to −10.8) / −13.0%(−14.4 to −11.6) / −5.4%(−6.9 to −4.0); ≥5% 72.6% / 71.9% / 46.3%; P<0.001 vs 위약
-- 같은 treatment-regimen 창의 ≥20% 감량: 28.5% 대 위약 6.6%(efficacy 칸이 아님)
+- 같은 treatment-regimen 창의 ≥20% 감량: 24.9%, 28.5%, 위약 6.6%. 용량 미배정. p값은 붙이지 않음
 - Methods 표본 크기 가정: 서보듀타이드 각 팔 14%, 위약 3%
+- efficacy 체중: −15.3% / −16.6% / −3.2%(원문 PDF 대조)
 - efficacy ≥5% 감량: 83.8%와 85.1%, 위약 38.8%. 용량은 표 열 머리글을 보지 못해 미배정
 - 위약 팔 16.5%: 시험에 남은 채 다른 GLP-1을 쓴 비율. 그중 상당수는 배정약을 이미 끊은 뒤. 팔 전체 16%+가 중단 후 GLP-1을 썼다는 뜻이 아님
 - GI AE: 80.9% / 89.7% / 47.9%(대개 경증–중등도); 사망 없음
 - 초록 결론: 당뇨 없는 비만 성인에서 위약 대비 유의하게 더 큰 체중 감소
 
 ### 낮은 확신도
-- efficacy 체중 −15.3% / −16.6% vs −3.2%: 원문 Figure 1B·Table S6에 있다고 색인된 문장이 있으나, 이 세션은 표 전체를 열지 못함
 - AJMC(2026-06-08): MRI 하위(~25/arm) 간지방 −63.1% vs −24.5%, 내장지방 −34.0% vs −11.8%, lean −9.8%; GI 중단 17.8% / 20.2% vs 2.9%; Fast Track/Breakthrough/PRIME·Kaplan 인터뷰·usual care 인용. 모두 2차 매체
 - 학회 토론의 성별 차이(여성 약 19.5% 대 남성 약 12.6%)와 discussant의 조기 중단 35–40%: AJMC 층. 이 NEJM 논문 PDF의 결과가 아님
 - SYNCHRONIZE-MASLD(동반) 간지방 ≥30% 상대 감소·정상화 61.0% 등: AJMC 2차. SYNCHRONIZE-1 1차와 혼동하지 않음
@@ -159,12 +159,13 @@ survodutide는 조사 중 글루카곤 수용체–GLP-1 수용체 이중작용�
 - SYNCHRONIZE-1과 SYNCHRONIZE-MASLD·SYNCHRONIZE-2 숫자를 한 시험처럼 합치는 서술
 - 발명한 인용문·발명한 PMID
 - AJMC가 이 시험의 검정력 가정으로 쓴 2–3%(다른 시험의 기댓값)
-- 표 열 머리글 없이 83.8%와 85.1%에 3.6 mg·6.0 mg을 붙인 서술
+- 표 열 머리글 없이 83.8%·85.1% 또는 24.9·28.5에 3.6 mg·6.0 mg을 붙인 서술
+- ≥20%를 28.5% 대 위약 6.6%만 써서 한 용량처럼 읽히게 하는 서술
 - 위약 팔 16% 이상이 중단한 뒤 GLP-1을 썼다는 서술
 
 ## 참고 문헌
 
-1. le Roux CW, Wharton S, Startseva E, et al. Survodutide Once Weekly for the Treatment of Adults with Obesity. *N Engl J Med*. 2026 Aug 20;395(8):776-787. Epub 2026 Jun 7. doi:10.1056/NEJMoa2600751. PMID:42253238. NCT06066515. https://pubmed.ncbi.nlm.nih.gov/42253238/ (PubMed 초록 확인; Methods 표본 크기 문장과 표 숫자열은 색인된 원문 스니펫으로 확인; 표 열 머리글·전문 PDF는 미열람)
+1. le Roux CW, Wharton S, Startseva E, et al. Survodutide Once Weekly for the Treatment of Adults with Obesity. *N Engl J Med*. 2026 Aug 20;395(8):776-787. Epub 2026 Jun 7. doi:10.1056/NEJMoa2600751. PMID:42253238. NCT06066515. https://pubmed.ncbi.nlm.nih.gov/42253238/ (PubMed 초록 확인; efficacy 체중 −15.3/−16.6/−3.2는 원문 PDF 대조; 표 열 머리글은 미확인)
 2. Shaw ML. Survodutide Phase 3 Data Signal Metabolic Gains Beyond Weight Loss. *AJMC*. 2026 Jun 8. https://www.ajmc.com/view/survodutide-phase-3-data-signal-metabolic-gains-beyond-weight-loss (2차)
 3. Grossi G. Dual Agonist Survodutide Delivers Up to 13.1% Weight Loss in T2D. *AJMC*. 2026 Oct 1. https://www.ajmc.com/view/dual-agonist-survodutide-delivers-up-to-13-1-weight-loss-in-t2d (2차; SYNCHRONIZE-2 감시 항목)
 4. ClinicalTrials.gov. NCT06066515, SYNCHRONIZE-1. https://clinicaltrials.gov/study/NCT06066515
