@@ -8,7 +8,7 @@ image: "/images/posts/2026-10-02-survodutide-synchronize-1-obesity-dual-agonist/
 
 > 이 글은 의료적 조언이 아니라 학술 연구를 소개하는 정보성 콘텐츠다. 비만·과체중의 약물 치료 선택, 용량, 투여 일정, 이상반응 관리, 임상시험 참여 여부는 개인의 병력·동반질환·지역 의료 자원에 따라 크게 달라지므로, 이 글의 어떤 내용도 담당 전문의와의 상담을 대신할 수 없다. survodutide는 조사 중 약물이며 규제 기관 승인을 받지 않았다. 이 지면은 승인·처방 권고를 하지 않는다.
 
-> **출처:** 1차는 2026년 8월 20일 *N Engl J Med*에 실린 le Roux CW, Wharton S, Startseva E 등의 SYNCHRONIZE-1 논문이다. "Survodutide Once Weekly for the Treatment of Adults with Obesity," *N Engl J Med*. 2026 Aug 20;395(8):776-787. Epub 2026 Jun 7. DOI [10.1056/NEJMoa2600751](https://doi.org/10.1056/NEJMoa2600751), PMID [42253238](https://pubmed.ncbi.nlm.nih.gov/42253238/), ClinicalTrials.gov [NCT06066515](https://clinicaltrials.gov/study/NCT06066515). PubMed 초록, 원문 Methods의 표본 크기 가정, efficacy 체중 −15.3% / −16.6% / −3.2%, 표 숫자열의 ≥5%(83.8%·85.1%·38.8%)와 ≥20%(24.9·28.5·위약 6.6), MRI 하위(6.0 mg 간지방 −63.1%, 내장지방 −34.0%, lean −9.8%, 팔당 약 25명), GI 중단 17.8% / 20.2% / 2.9%를 확인했다. 표의 열 머리글은 보지 못해 83.8%·85.1%와 24.9·28.5에 용량을 붙이지 않는다. 2차로 AJMC Maggie L. Shaw(2026-06-08)의 SYNCHRONIZE-1·내약성 서사·89% 지방 요약을 썼다([링크](https://www.ajmc.com/view/survodutide-phase-3-data-signal-metabolic-gains-beyond-weight-loss)). SYNCHRONIZE-2(비만+제2형 당뇨)는 AJMC Giuliana Grossi(2026-10-01) 2차 보도를 감시 항목으로만 적는다([링크](https://www.ajmc.com/view/dual-agonist-survodutide-delivers-up-to-13-1-weight-loss-in-t2d)). 회사·매체 주장은 본문에서 2차로 표시한다.
+> **출처:** 1차는 2026년 8월 20일 *N Engl J Med*에 실린 le Roux CW, Wharton S, Startseva E 등의 SYNCHRONIZE-1 논문이다. "Survodutide Once Weekly for the Treatment of Adults with Obesity," *N Engl J Med*. 2026 Aug 20;395(8):776-787. Epub 2026 Jun 7. DOI [10.1056/NEJMoa2600751](https://doi.org/10.1056/NEJMoa2600751), PMID [42253238](https://pubmed.ncbi.nlm.nih.gov/42253238/), ClinicalTrials.gov [NCT06066515](https://clinicaltrials.gov/study/NCT06066515). PubMed 초록, 원문 Methods의 표본 크기 가정, efficacy 체중 −15.3% / −16.6% / −3.2%, 표 숫자열의 ≥5%(83.8%·85.1%·38.8%)와 ≥20%(24.9·28.5·위약 6.6), MRI 하위(6.0 mg 간지방 −63.1%, 내장지방 −34.0%, lean −9.8%, 팔당 약 25명), GI 중단 17.8% / 20.2% / 2.9%를 확인했다. 표의 열 머리글은 보지 못해 83.8%·85.1%와 24.9·28.5에 용량을 붙이지 않는다. 2차로 AJMC Maggie L. Shaw(2026-06-08)의 위약 간지방 −24.5%·위약 내장지방 −11.8%·내약성 서사·89% 지방 요약을 썼다([링크](https://www.ajmc.com/view/survodutide-phase-3-data-signal-metabolic-gains-beyond-weight-loss)). SYNCHRONIZE-2(비만+제2형 당뇨)는 AJMC Giuliana Grossi(2026-10-01) 2차 보도를 감시 항목으로만 적는다([링크](https://www.ajmc.com/view/dual-agonist-survodutide-delivers-up-to-13-1-weight-loss-in-t2d)). 회사·매체 주장은 본문에서 2차로 표시한다.
 
 ![새벽 빛이 드는 빈 진료실. 체중계와 부드러운 의자가 창가에 있다. 사람 얼굴·텍스트·로고 없음.](/images/posts/2026-10-02-survodutide-synchronize-1-obesity-dual-agonist/cover.png)
 
@@ -48,7 +48,9 @@ AJMC는 학회 토론에서 6.0 mg 팔의 성별 차이(여성 약 19.5% 대 남
 
 ## 4. MRI 하위연구, 간지방 −63.1%와 내장지방 −34.0%
 
-원문 PDF가 적는 SYNCHRONIZE-1 MRI 하위연구다. 팔당 약 25명이다. 6.0 mg에서 간지방은 기저 대비 상대 −63.1%, 위약은 −24.5%다. 내장지방 부피는 −34.0% 대 −11.8%, 제지방(lean) 부피 감소는 −9.8%다. 이 MRI 줄에 3.6 mg을 붙이지는 않는다.
+원문 PDF가 적는 SYNCHRONIZE-1 MRI 하위연구다. 팔당 약 25명이다. 6.0 mg에서 간지방은 기저 대비 상대 −63.1%, 내장지방 부피는 −34.0%, 제지방(lean) 부피 감소는 −9.8%다. 이 MRI 줄에 3.6 mg을 붙이지는 않는다.
+
+AJMC는 위약 간지방을 −24.5%, 위약 내장지방을 −11.8%로 적는다. 그 두 위약 숫자는 **2차**다.
 
 AJMC는 전체 조직 변화의 약 89% 이상이 지방이었다는 식으로 요약한다. 그 89% 서술은 **2차**다. 초록의 1차 창에는 이 MRI 숫자가 없다. 표본이 작다.
 
@@ -146,12 +148,12 @@ survodutide는 조사 중 글루카곤 수용체–GLP-1 수용체 이중작용�
 - efficacy ≥5% 감량: 83.8%와 85.1%, 위약 38.8%. 용량은 표 열 머리글을 보지 못해 미배정
 - 위약 팔 16.5%: 시험에 남은 채 다른 GLP-1을 쓴 비율. 그중 상당수는 배정약을 이미 끊은 뒤. 팔 전체 16%+가 중단 후 GLP-1을 썼다는 뜻이 아님
 - GI AE: 80.9% / 89.7% / 47.9%(대개 경증–중등도); 사망 없음
-- MRI 하위(원문 PDF): 팔당 약 25명. 6.0 mg 간지방 −63.1%(위약 −24.5%). 내장지방 −34.0%(위약 −11.8%), lean −9.8%. −63.1%는 “survodutide at a dose of 6.0 mg was associated with reductions of … 63.1% in liver fat” 문장. 같은 문장이 내장지방 34.0%와 lean 9.8%도 6.0 mg에 붙인다. 3.6 mg MRI 숫자는 붙이지 않음
+- MRI 하위(원문 PDF): 팔당 약 25명. 6.0 mg 간지방 −63.1%, 내장지방 −34.0%, lean −9.8%. −63.1%는 “survodutide at a dose of 6.0 mg was associated with reductions of … 63.1% in liver fat” 문장. 같은 문장이 내장지방 34.0%와 lean 9.8%도 6.0 mg에 붙인다. 3.6 mg MRI 숫자는 붙이지 않음. 위약 간지방 −24.5%와 위약 내장지방 −11.8%는 이 줄에 두지 않음
 - GI 중단(원문 PDF): 17.8%(3.6 mg) / 20.2%(6.0 mg) / 2.9%(위약). 본문·AJMC와 같은 팔 순서
 - 초록 결론: 당뇨 없는 비만 성인에서 위약 대비 유의하게 더 큰 체중 감소
 
 ### 낮은 확신도
-- AJMC(2026-06-08): 조직 변화의 약 89%가 지방, Fast Track/Breakthrough/PRIME, Kaplan 인터뷰, usual care 인용, GI 중단이 증량 구간에 집중됐다는 서사. 모두 2차 매체
+- AJMC(2026-06-08): 위약 간지방 −24.5%, 위약 내장지방 −11.8%, 조직 변화의 약 89%가 지방, Fast Track/Breakthrough/PRIME, Kaplan 인터뷰, usual care 인용, GI 중단이 증량 구간에 집중됐다는 서사. 모두 2차 매체. 잘린 “24.5%” 스니펫만으로는 위약 두 숫자를 PDF-checked로 두지 않음
 - 학회 토론의 성별 차이(여성 약 19.5% 대 남성 약 12.6%)와 discussant의 조기 중단 35–40%: AJMC 층. 이 NEJM 논문 PDF의 결과가 아님
 - SYNCHRONIZE-MASLD(동반) 간지방 ≥30% 상대 감소·정상화 61.0% 등: AJMC 2차. SYNCHRONIZE-1 1차와 혼동하지 않음
 - SYNCHRONIZE-2(AJMC 2026-10-01): 비만+T2D에서 최대 체중 −13.1% vs 위약 −3.1%, ≥5% 최대 79.3% vs 32.7%, HbA1c 최대 −1.21%, GI 중단 약 18% vs 1.2% 등. **AJMC 2차 보도만**; SYNCHRONIZE-2 NEJM PDF는 대조하지 않음. NEJM DOI 10.1056/NEJMoa2607219 언급은 AJMC 참고문헌 기준
@@ -163,6 +165,7 @@ survodutide는 조사 중 글루카곤 수용체–GLP-1 수용체 이중작용�
 - SYNCHRONIZE-1과 SYNCHRONIZE-MASLD·SYNCHRONIZE-2 숫자를 한 시험처럼 합치는 서술
 - 발명한 인용문·발명한 PMID
 - 원문 PDF에서 맞춘 MRI(6.0 mg 간지방 −63.1%, 내장지방 −34.0%, lean −9.8%, 팔당 약 25명)와 GI 중단 17.8/20.2/2.9를 AJMC-only로 두는 서술
+- 잘린 “24.5%” 스니펫만으로 위약 간지방 −24.5%·위약 내장지방 −11.8%를 PDF-checked로 두는 서술
 - AJMC가 이 시험의 검정력 가정으로 쓴 2–3%(다른 시험의 기댓값)
 - 표 열 머리글 없이 83.8%·85.1% 또는 24.9·28.5에 3.6 mg·6.0 mg을 붙인 서술
 - ≥20%를 28.5% 대 위약 6.6%만 써서 한 용량처럼 읽히게 하는 서술
